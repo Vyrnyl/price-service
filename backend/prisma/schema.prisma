@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String
+  email     String       @unique
+  password  String
+  role      UserRole     @default(PUBLIC)
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  prices    PriceRecord[]
+  reports   Report[]
+}
+
+model Commodity {
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String
+  unit      String
+  category  String
+  createdAt DateTime     @default(now())
+  srps      SRP[]
+  prices    PriceRecord[]
+  forecasts Forecast[]
+}
+
+model SRP {
+  id           String    @id @default(uuid()) @db.Uuid
+  commodityId  String    @db.Uuid
+  price        Decimal   @db.Decimal(20, 4)
+  effectiveDate DateTime
+  createdAt    DateTime  @default(now())
+  commodity    Commodity @relation(fields: [commodityId], references: [id])
+}
+
+model Store {
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String
+  location  String
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime     @default(now())
+  prices    PriceRecord[]
+}
+
+model PriceRecord {
+  id          String    @id @default(uuid()) @db.Uuid
+  commodityId String    @db.Uuid
+  storeId     String    @db.Uuid
+  userId      String    @db.Uuid
+  price       Decimal   @db.Decimal(20, 4)
+  date        DateTime
+  photoUrl    String
+  status      PriceStatus
+  createdAt   DateTime  @default(now())
+  commodity   Commodity @relation(fields: [commodityId], references: [id])
+  store       Store     @relation(fields: [storeId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model Report {
+  id          String     @id @default(uuid()) @db.Uuid
+  type        ReportType
+  generatedBy String     @db.Uuid
+  period      String
+  fileUrl     String
+  createdAt   DateTime   @default(now())
+  user        User       @relation(fields: [generatedBy], references: [id])
+}
+
+model Forecast {
+  id             String    @id @default(uuid()) @db.Uuid
+  commodityId    String    @db.Uuid
+  predictedPrice Decimal   @db.Decimal(20, 4)
+  confidence     Float
+  forecastDate   DateTime
+  createdAt      DateTime  @default(now())
+  commodity      Commodity @relation(fields: [commodityId], references: [id])
+}
+
+enum UserRole {
+  ADMIN
+  OFFICER
+  PUBLIC
+}
+
+enum PriceStatus {
+  COMPLIANT
+  OVERPRICE
+  UNDERPRICE
+}
+
+enum ReportType {
+  MONTHLY
+  SRP_COMPLIANCE
+  TREND
+}
