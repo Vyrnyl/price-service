@@ -11,6 +11,9 @@ export const userRepository = {
   findAll: () =>
     prisma.user.findMany(),
 
+  findByEmail: (email: string) =>
+    prisma.user.findUnique({ where: { email } }),
+
   findById: (id: string) =>
     prisma.user.findUnique({ where: { id } }),
 
