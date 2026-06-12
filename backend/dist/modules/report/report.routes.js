@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const asyncHandler_1 = require("../../utils/asyncHandler");
+const report_controller_1 = require("./report.controller");
+const router = (0, express_1.Router)();
+router.post('/', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.createReport));
+router.get('/', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.getReports));
+router.get('/:id', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.getReportById));
+router.put('/:id', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.updateReport));
+router.delete('/:id', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.deleteReport));
+exports.default = router;

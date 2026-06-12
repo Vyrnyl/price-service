@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const asyncHandler_1 = require("../../utils/asyncHandler");
+const forecast_controller_1 = require("./forecast.controller");
+const router = (0, express_1.Router)();
+router.post('/', (0, asyncHandler_1.asyncHandler)(forecast_controller_1.forecastController.createForecast));
+router.get('/', (0, asyncHandler_1.asyncHandler)(forecast_controller_1.forecastController.getForecasts));
+router.get('/:id', (0, asyncHandler_1.asyncHandler)(forecast_controller_1.forecastController.getForecastById));
+router.put('/:id', (0, asyncHandler_1.asyncHandler)(forecast_controller_1.forecastController.updateForecast));
+router.delete('/:id', (0, asyncHandler_1.asyncHandler)(forecast_controller_1.forecastController.deleteForecast));
+exports.default = router;

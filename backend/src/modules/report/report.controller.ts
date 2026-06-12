@@ -1,0 +1,50 @@
+import { Request, Response } from 'express';
+import AppError from '../../utils/AppError';
+import { reportService } from './report.service';
+import { createReportSchema, updateReportSchema, reportIdParamSchema } from './report.schema';
+
+export const reportController = {
+  createReport: async (req: Request, res: Response) => {
+    const validatedBody = createReportSchema.parse(req.body);
+    const report = await reportService.createReport(validatedBody);
+
+    res.status(201).json({ status: 'success', data: report });
+  },
+
+  getReports: async (_req: Request, res: Response) => {
+    const reports = await reportService.getReports();
+
+    res.json({ status: 'success', data: reports });
+  },
+
+  getReportById: async (req: Request, res: Response) => {
+    const { id } = reportIdParamSchema.parse(req.params);
+    const report = await reportService.getReportById(id);
+
+    if (!report) {
+      throw new AppError('Report not found', 404);
+    }
+
+    res.json({ status: 'success', data: report });
+  },
+
+  updateReport: async (req: Request, res: Response) => {
+    const { id } = reportIdParamSchema.parse(req.params);
+    const validatedBody = updateReportSchema.parse(req.body);
+    const report = await reportService.updateReport(id, validatedBody);
+
+    if (!report) {
+      throw new AppError('Report not found', 404);
+    }
+
+    res.json({ status: 'success', data: report });
+  },
+
+  deleteReport: async (req: Request, res: Response) => {
+    const { id } = reportIdParamSchema.parse(req.params);
+
+    await reportService.deleteReport(id);
+
+    res.status(204).send();
+  },
+};
