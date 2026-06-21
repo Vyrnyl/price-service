@@ -22,6 +22,15 @@ const errorHandler = (err, req, res, next) => {
             errors: err.issues,
         });
     }
+    if (err instanceof client_1.Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        const target = Array.isArray(err.meta?.target)
+            ? err.meta.target.join(', ')
+            : 'field';
+        return res.status(409).json({
+            success: false,
+            message: `${target} already exists`,
+        });
+    }
     if (err instanceof client_1.Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
         return res.status(404).json({
             success: false,

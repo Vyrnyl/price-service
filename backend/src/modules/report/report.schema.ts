@@ -6,7 +6,7 @@ export const createReportSchema = z.object({
   type: reportTypeEnum,
   generatedBy: z.string().uuid('Invalid user ID'),
   period: z.string().min(1, 'Period is required'),
-  fileUrl: z.string().url('Invalid file URL'),
+  fileUrl: z.string().min(1, 'URL is required'),
 });
 
 export const updateReportSchema = createReportSchema.partial();
