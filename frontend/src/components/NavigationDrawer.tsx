@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   MdOutlineDashboard,
@@ -5,19 +7,40 @@ import {
   MdOutlineSettings,
   MdOutlineTrendingUp,
 } from "react-icons/md";
+import { useRole } from "../context/RoleContext";
 
-const navLinks = [
-  { href: "/", icon: MdOutlineDashboard, label: "Market Dashboard" },
-  { href: "/commodity-list", icon: MdOutlineInventory2, label: "Commodity List" },
-  { href: "/price-analysis", icon: MdOutlineTrendingUp, label: "Price Analysis" },
-  { href: "/settings", icon: MdOutlineSettings, label: "Settings" },
-];
+const roleSpecificLinks = {
+  admin: [
+    { href: "/admin", icon: MdOutlineDashboard, label: "Admin Dashboard" },
+    { href: "/admin/settings", icon: MdOutlineSettings, label: "Settings" },
+  ],
+  officer: [
+    { href: "/officer", icon: MdOutlineDashboard, label: "Officer Dashboard" },
+    { href: "/officer/settings", icon: MdOutlineSettings, label: "Settings" },
+  ],
+  public: [
+    { href: "/", icon: MdOutlineDashboard, label: "Dashboard" },
+    {
+      href: "/commodity-list",
+      icon: MdOutlineInventory2,
+      label: "Commodity List",
+    },
+    {
+      href: "/price-analysis",
+      icon: MdOutlineTrendingUp,
+      label: "Price Analysis",
+    },
+  ],
+} as const;
 
 export default function NavigationDrawer({
   activePath,
 }: {
   activePath: string;
 }) {
+  const { role } = useRole();
+  const links = roleSpecificLinks["admin"];
+
   return (
     <aside className="fixed left-0 top-0 z-40 mt-20 hidden h-full w-72 flex-col rounded-r-xl bg-surface-container pt-8 shadow-lg lg:flex">
       <div className="mb-8 px-6">
@@ -26,9 +49,10 @@ export default function NavigationDrawer({
         </h2>
       </div>
       <nav className="flex flex-col gap-2">
-        {navLinks.map((item) => {
+        {links.map((item) => {
           const Icon = item.icon;
           const isActive = activePath === item.href;
+
           return (
             <Link
               key={item.href}
