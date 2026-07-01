@@ -130,13 +130,6 @@ export default function UsersManagementPage() {
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
-              <nav className="mb-2 flex items-center gap-2 text-[12px] font-label-caps text-outline">
-                <span>ADMIN</span>
-                <span className="material-symbols-outlined text-[14px]">
-                  chevron_right
-                </span>
-                <span className="text-primary">USER MANAGEMENT</span>
-              </nav>
               <h1 className="font-h1-desktop text-h1-desktop text-on-surface mobile:font-h1-mobile mobile:text-h1-mobile">
                 System Access
               </h1>
@@ -145,41 +138,42 @@ export default function UsersManagementPage() {
                 across the platform.
               </p>
             </div>
-            <button className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-on-primary shadow-sm transition-all hover:shadow-md active:scale-[0.98]">
+            <button className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md active:scale-[0.98]">
               <MdOutlinePersonAdd size={20} />
               <span>Add New User</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="flex flex-wrap gap-6">
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
                 <div
                   key={stat.label}
-                  className="rounded-2xl border border-outline-variant bg-white p-6 shadow-sm"
+                  className="flex min-w-48 flex-1 flex-col rounded-2xl border border-outline-variant bg-white p-4 shadow-sm data-card-shadow"
                 >
-                  <div className="mb-3 flex items-start justify-between">
-                    <span className={`rounded-lg p-2 ${stat.accent}`}>
-                      <Icon size={24} />
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <span className={`rounded-xl p-2 ${stat.accent}`}>
+                      <Icon size={20} />
                     </span>
-                    <span className="text-[10px] font-label-caps uppercase tracking-wider text-outline">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-outline">
                       {stat.label}
                     </span>
                   </div>
-                  <div className="font-h1-desktop text-h2-desktop text-on-surface">
+                  <p className="mb-1 font-label-caps text-label-caps text-on-surface-variant">
+                    {stat.label}
+                  </p>
+                  <h3 className="text-[28px] font-bold leading-none text-on-surface">
                     {stat.value}
-                  </div>
-                  <div
-                    className={`mt-1 flex items-center gap-1 text-xs ${stat.trendTone}`}
-                  >
+                  </h3>
+                  <div className={`mt-2 flex items-center gap-1 text-body-sm ${stat.trendTone}`}>
                     <MdOutlinePeopleAlt size={12} />
                     <span>{stat.trend}</span>
                   </div>
                 </div>
               );
             })}
-          </div>
+          </section>
 
           <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-outline-variant bg-white p-4 shadow-sm lg:flex-row">
             <div className="relative w-full lg:w-96">

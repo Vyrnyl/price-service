@@ -1,9 +1,9 @@
 import AppShell from "@/components/AppShell";
 import CommodityManagementPage from "@/components/CommodityManagementPage";
 
-export default function AdminCommoditiesRoute() {
+export default function OfficerCommoditiesRoute() {
   return (
-    <AppShell activePath="/admin/commodities">
+    <AppShell activePath="/officer/commodities">
       <CommodityManagementPage />
     </AppShell>
   );

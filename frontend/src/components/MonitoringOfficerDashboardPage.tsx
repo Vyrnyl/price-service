@@ -83,30 +83,34 @@ export default function MonitoringOfficerDashboardPage() {
                 Track compliance, reviews, and price updates across the province.
               </p>
             </div>
-            <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
+            <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
               <MdNotificationsActive />
               View Alerts
             </button>
           </div>
 
-          <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          <section className="flex flex-wrap gap-6">
             {stats.map((stat) => {
               const Icon = stat.icon;
               return (
                 <div
                   key={stat.label}
-                  className="rounded-2xl border border-outline-variant bg-white p-6 data-card-shadow"
+                  className="flex min-w-48 flex-1 flex-col rounded-2xl border border-outline-variant bg-white p-4 data-card-shadow"
                 >
-                  <div className="mb-4 flex items-center justify-between">
+                  <div className="mb-3 flex items-start justify-between gap-3">
                     <span className={`rounded-xl p-2 ${stat.bg}`}>
-                      <Icon className={stat.tone} size={22} />
+                      <Icon className={stat.tone} size={20} />
                     </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-outline">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-outline">
                       Today
                     </span>
                   </div>
-                  <div className="text-[32px] font-bold text-on-surface">{stat.value}</div>
-                  <div className="mt-1 text-sm text-on-surface-variant">{stat.label}</div>
+                  <p className="mb-1 font-label-caps text-label-caps text-on-surface-variant">
+                    {stat.label}
+                  </p>
+                  <h3 className="text-[28px] font-bold leading-none text-on-surface">
+                    {stat.value}
+                  </h3>
                 </div>
               );
             })}
@@ -118,33 +122,33 @@ export default function MonitoringOfficerDashboardPage() {
                 <h3 className="font-h3-desktop text-h3-desktop text-on-surface">
                   Commodity Compliance
                 </h3>
-                <p className="text-sm text-on-surface-variant">Latest monitoring results</p>
+                <p className="text-body-sm text-on-surface-variant">Latest monitoring results</p>
               </div>
               <div className="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2">
                 <MdSearch className="text-outline" />
-                <span className="text-sm text-on-surface-variant">Search commodity</span>
+                <span className="text-body-sm text-on-surface-variant">Search commodity</span>
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-left">
+              <table className="min-w-full table-fixed text-left">
                 <thead>
                   <tr className="border-b border-outline-variant/30">
-                    <th className="pb-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Commodity</th>
-                    <th className="pb-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Store</th>
-                    <th className="pb-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Region</th>
-                    <th className="pb-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Price</th>
-                    <th className="pb-3 text-[10px] font-semibold uppercase tracking-wide text-outline">SRP</th>
-                    <th className="pb-3 text-right text-[10px] font-semibold uppercase tracking-wide text-outline">Status</th>
+                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Commodity</th>
+                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Store</th>
+                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Region</th>
+                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Price</th>
+                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">SRP</th>
+                    <th className="pb-3 text-right text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/20">
                   {rows.map((row) => (
                     <tr key={row.commodity}>
                       <td className="py-4 font-semibold text-on-surface">{row.commodity}</td>
-                      <td className="py-4 text-sm text-on-surface-variant">{row.store}</td>
-                      <td className="py-4 text-sm text-on-surface-variant">{row.region}</td>
-                      <td className="py-4 text-sm font-semibold text-on-surface">{row.price}</td>
-                      <td className="py-4 text-sm text-on-surface-variant">{row.srp}</td>
+                      <td className="py-4 text-body-sm text-on-surface-variant">{row.store}</td>
+                      <td className="py-4 text-body-sm text-on-surface-variant">{row.region}</td>
+                      <td className="py-4 text-body-sm font-semibold text-on-surface">{row.price}</td>
+                      <td className="py-4 text-body-sm text-on-surface-variant">{row.srp}</td>
                       <td className="py-4 text-right">
                         <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${row.statusClass}`}>
                           {row.status}
