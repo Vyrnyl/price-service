@@ -7,11 +7,14 @@ import {
   MdOutlineSettings,
   MdOutlineTrendingUp,
 } from "react-icons/md";
+import { HiUsers } from "react-icons/hi2";
 import { useRole } from "../context/RoleContext";
 
 const roleSpecificLinks = {
   admin: [
     { href: "/admin", icon: MdOutlineDashboard, label: "Admin Dashboard" },
+    { href: "/admin/commodities", icon: MdOutlineInventory2, label: "Commodities" },
+    { href: "/admin/users", icon: HiUsers, label: "Users" },
     { href: "/admin/settings", icon: MdOutlineSettings, label: "Settings" },
   ],
   officer: [

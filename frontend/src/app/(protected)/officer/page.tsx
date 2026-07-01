@@ -3,7 +3,7 @@ import MonitoringOfficerDashboardPage from "@/components/MonitoringOfficerDashbo
 
 export default function MonitoringOfficerRoute() {
   return (
-    <AppShell activePath="/monitoring-officer">
+    <AppShell activePath="/officer">
       <MonitoringOfficerDashboardPage />
     </AppShell>
   );

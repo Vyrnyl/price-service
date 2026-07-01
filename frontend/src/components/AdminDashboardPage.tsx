@@ -1,9 +1,23 @@
+import {
+  MdOutlineInventory2,
+  MdOutlineTrendingUp,
+  MdOutlineStorefront,
+  MdOutlineSell,
+  MdOutlineLogin,
+  MdOutlineReportProblem,
+  MdOutlinePersonAdd,
+  MdOutlineCheckCircle,
+} from "react-icons/md";
+import { FiUsers } from "react-icons/fi";
+import { IoFilterOutline, IoWarningOutline } from "react-icons/io5";
+import { IoMdAdd, IoMdMore } from "react-icons/io";
+import { LuDownload } from "react-icons/lu";
 const stats = [
   {
     label: "Total Commodities",
     value: "120",
     meta: "+2 new",
-    icon: "inventory_2",
+    icon: MdOutlineInventory2,
     iconBg: "bg-primary-container/10",
     iconColor: "text-primary",
   },
@@ -11,7 +25,7 @@ const stats = [
     label: "Monitored Prices",
     value: "1.2k",
     meta: "Updated 1h ago",
-    icon: "monitoring",
+    icon: MdOutlineTrendingUp,
     iconBg: "bg-tertiary-container/10",
     iconColor: "text-tertiary",
   },
@@ -19,7 +33,7 @@ const stats = [
     label: "Total Stores",
     value: "65",
     meta: "6 Active Regions",
-    icon: "storefront",
+    icon: MdOutlineStorefront,
     iconBg: "bg-secondary-container/10",
     iconColor: "text-secondary",
   },
@@ -27,7 +41,7 @@ const stats = [
     label: "Total Users",
     value: "12",
     meta: "",
-    icon: "group",
+    icon: FiUsers,
     iconBg: "bg-outline-variant/20",
     iconColor: "text-on-surface-variant",
   },
@@ -35,7 +49,7 @@ const stats = [
     label: "Violations",
     value: "18",
     meta: "Critical",
-    icon: "warning",
+    icon: IoWarningOutline,
     iconBg: "bg-error-container/20",
     iconColor: "text-error",
     valueColor: "text-error",
@@ -45,7 +59,7 @@ const stats = [
 
 const activityItems = [
   {
-    icon: "sell",
+    icon: MdOutlineSell,
     iconStyle: "bg-secondary-container text-on-secondary-container",
     title: "Rice (Regular Milled)",
     description: "price updated at SM Market, Manila.",
@@ -53,21 +67,21 @@ const activityItems = [
     change: "₱42.00 → ₱43.50",
   },
   {
-    icon: "login",
+    icon: MdOutlineLogin,
     iconStyle: "bg-surface-container-highest text-on-surface-variant",
     title: "Inspector Maria S.",
     description: "logged in from QC Field Office.",
     time: "15 Minutes Ago",
   },
   {
-    icon: "report",
+    icon: MdOutlineReportProblem,
     iconStyle: "bg-error-container/20 text-error",
     title: "SRP Violation",
     description: "flagged: Store #042 - Onion (Red).",
     time: "1 Hour Ago",
   },
   {
-    icon: "person_add",
+    icon: MdOutlinePersonAdd,
     iconStyle: "bg-primary-container/10 text-primary",
     title: "2 New Retailers",
     description: "approved for price submission.",
@@ -83,7 +97,7 @@ const watchlistRows = [
     srp: "₱41.00",
     trend: "+5.3%",
     trendColor: "text-error",
-    trendIcon: "trending_up",
+    trendIcon: MdOutlineTrendingUp,
     status: "Violation",
     statusStyle: "bg-error text-on-error",
   },
@@ -94,7 +108,7 @@ const watchlistRows = [
     srp: "₱100.00",
     trend: "-1.2%",
     trendColor: "text-primary",
-    trendIcon: "trending_down",
+    trendIcon: MdOutlineTrendingUp,
     status: "Compliant",
     statusStyle: "border border-outline text-outline",
   },
@@ -105,7 +119,7 @@ const watchlistRows = [
     srp: "₱170.00",
     trend: "+12.4%",
     trendColor: "text-error",
-    trendIcon: "trending_up",
+    trendIcon: MdOutlineTrendingUp,
     status: "Violation",
     statusStyle: "bg-error text-on-error",
   },
@@ -116,7 +130,7 @@ const watchlistRows = [
     srp: "₱65.00",
     trend: "Stable",
     trendColor: "text-on-surface-variant",
-    trendIcon: "",
+    trendIcon: MdOutlineTrendingUp,
     status: "Compliant",
     statusStyle: "border border-outline text-outline",
   },
@@ -137,7 +151,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
             <button className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
-              <span className="material-symbols-outlined text-lg">add</span>
+              <IoMdAdd />
               New Price Entry
             </button>
           </div>
@@ -150,9 +164,7 @@ export default function AdminDashboardPage() {
               >
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className={`rounded-xl p-2 ${stat.iconBg}`}>
-                    <span className={`material-symbols-outlined ${stat.iconColor}`}>
-                      {stat.icon}
-                    </span>
+                    <stat.icon className={stat.iconColor} size={24} />
                   </div>
                   {stat.meta ? (
                     <span
@@ -255,9 +267,7 @@ export default function AdminDashboardPage() {
                 <h4 className="font-h3-desktop text-h3-desktop text-on-surface">
                   Recent Activity
                 </h4>
-                <span className="material-symbols-outlined cursor-pointer text-outline">
-                  more_vert
-                </span>
+                <IoMdMore />
               </div>
               <div className="flex-1 space-y-6">
                 {activityItems.map((item) => (
@@ -265,7 +275,7 @@ export default function AdminDashboardPage() {
                     <div
                       className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${item.iconStyle}`}
                     >
-                      <span className="material-symbols-outlined text-sm">{item.icon}</span>
+                      <item.icon size={18} />
                     </div>
                     <div>
                       <p className="text-body-sm text-on-surface">
@@ -310,11 +320,11 @@ export default function AdminDashboardPage() {
                 </h4>
                 <div className="flex gap-2">
                   <button className="flex items-center gap-1.5 rounded-xl border border-outline-variant px-3 py-2 text-xs font-semibold text-on-surface-variant">
-                    <span className="material-symbols-outlined text-sm">filter_list</span>
+                    <IoFilterOutline />
                     Filter
                   </button>
                   <button className="flex items-center gap-1.5 rounded-xl border border-outline-variant px-3 py-2 text-xs font-semibold text-on-surface-variant">
-                    <span className="material-symbols-outlined text-sm">download</span>
+                    <LuDownload />
                     Export
                   </button>
                 </div>
@@ -345,9 +355,7 @@ export default function AdminDashboardPage() {
                         <td className="py-4 text-sm text-on-surface-variant">{row.srp}</td>
                         <td className="py-4">
                           <div className={`flex items-center gap-1 ${row.trendColor}`}>
-                            {row.trendIcon ? (
-                              <span className="material-symbols-outlined text-sm">{row.trendIcon}</span>
-                            ) : null}
+                            {row.trendIcon ? <row.trendIcon size={14} /> : null}
                             <span className="text-xs font-bold">{row.trend}</span>
                           </div>
                         </td>
@@ -357,7 +365,7 @@ export default function AdminDashboardPage() {
                           >
                             {row.status === "Compliant" ? (
                               <>
-                                <span className="material-symbols-outlined mr-1 text-xs">check</span>
+                                <MdOutlineCheckCircle className="mr-1" size={12} />
                                 Compliant
                               </>
                             ) : (

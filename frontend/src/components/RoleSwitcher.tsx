@@ -4,7 +4,7 @@ import { useRole, type UserRole } from "../context/RoleContext";
 
 const roles: { value: UserRole; label: string }[] = [
   { value: "public", label: "Public User" },
-  { value: "monitoring-officer", label: "Monitoring Officer" },
+  { value: "officer", label: "Monitoring Officer" },
   { value: "admin", label: "Admin" },
 ];
 
