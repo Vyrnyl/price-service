@@ -10,7 +10,7 @@ export const userController = {
     res.status(201).json(user);
   },
   
-  getUsers: async (_req: Request, res: Response) => {
+  getUsers: async (req: Request, res: Response) => {
     const users = await userService.getUsers();
     res.json(users);
   },

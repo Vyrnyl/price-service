@@ -6,14 +6,16 @@ import MobileBottomNav from "./MobileBottomNav";
 export default function AppShell({
   children,
   activePath,
+  hideNavigation,
 }: {
   children: React.ReactNode;
   activePath: string;
+  hideNavigation?: boolean;
 }) {
   return (
     <>
       <TopAppBar activePath={activePath} />
-      <NavigationDrawer activePath={activePath} />
+      {!hideNavigation && <NavigationDrawer activePath={activePath} />}
       {children}
       <FooterSection />
       <MobileBottomNav />

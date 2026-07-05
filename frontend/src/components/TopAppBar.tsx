@@ -17,6 +17,8 @@ export default function TopAppBar({
 }: {
   activePath: string;
 }) {
+  const showLoginButton = activePath !== "/login";
+
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between border-b border-outline-variant bg-surface px-container-margin-mobile py-stack-md shadow-sm md:px-container-margin-desktop">
       <Link href="/" className="flex items-center gap-3">
@@ -42,13 +44,17 @@ export default function TopAppBar({
       </div> */}
       <div className="flex items-center gap-3">
         {/* <RoleSwitcher /> */}
-        <button className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low">
+        {/* <button className="rounded-full p-2 text-on-surface-variant transition-colors hover:bg-surface-container-low">
           <FaSearch />
-        </button>
-        <button className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2 font-label-caps text-label-caps text-on-primary transition-opacity hover:opacity-90 md:flex">
-          <LuLogIn fontSize={12} />
-          LOGIN
-        </button>
+        </button> */}
+        {showLoginButton ? (
+          <Link href="/login">
+            <button className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2 font-label-caps text-label-caps text-on-primary transition-opacity hover:opacity-90 md:flex">
+              <LuLogIn fontSize={12} />
+              LOGIN
+            </button>
+          </Link>
+        ) : null}
       </div>
     </header>
   );

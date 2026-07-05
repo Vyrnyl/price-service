@@ -1,4 +1,5 @@
 import AppError from '../../utils/AppError';
+import { passwordUtils } from '../../utils/passwordUtils';
 import { CreateUserInput, UpdateUserInput, userRepository } from './user.repository';
 
 export const userService = {
@@ -9,7 +10,14 @@ export const userService = {
       throw new AppError('Email already exists', 409);
     }
 
-    return userRepository.create(data);
+    const hashedPassword = await passwordUtils.hashPassword(data.password);
+
+    const { confirmPassword, ...createData } = data as CreateUserInput & { confirmPassword?: string };
+
+    return userRepository.create({
+      ...createData,
+      password: hashedPassword,
+    });
   },
 
   getUsers: () => userRepository.findAll(),
@@ -24,7 +32,18 @@ export const userService = {
       }
     }
 
-    return userRepository.update(id, data);
+    let updateData = { ...data };
+    if (typeof data.password === "string") {
+      const hashedPassword = await passwordUtils.hashPassword(data.password);
+      updateData = {
+        ...updateData,
+        password: hashedPassword,
+      };
+    }
+
+    const { confirmPassword, ...finalData } = updateData as UpdateUserInput & { confirmPassword?: string };
+
+    return userRepository.update(id, finalData);
   },
 
   deleteUser: (id: string) => userRepository.delete(id),

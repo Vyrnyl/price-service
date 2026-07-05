@@ -1,14 +1,25 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
+import cookieParser from "cookie-parser";
 import apiRoutes from './routes';
 import { errorHandler } from './middleware/error.middleware';
+import { authenticate } from './middleware/auth.middleware';
+import authRoutes from './modules/auth/auth.routes';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
+
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+}));
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api', apiRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api', authenticate, apiRoutes);
 
 app.get('/', (_req: Request, res: Response) => {
   res.json({ message: 'PresyoSerbisyo backend is running' });

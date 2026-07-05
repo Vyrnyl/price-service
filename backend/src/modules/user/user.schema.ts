@@ -1,14 +1,38 @@
 import { z } from 'zod';
 
-export const createUserSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['ADMIN', 'OFFICER', 'PUBLIC']).optional(),
+const userSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(8, "Confirm password must be at least 8 characters"),
+  role: z.enum(["ADMIN", "OFFICER", "PUBLIC"]).optional(),
   isActive: z.boolean().optional(),
 });
 
-export const updateUserSchema = createUserSchema.partial();
+export const createUserSchema = userSchema.refine(
+  (data) => data.password === data.confirmPassword,
+  {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  }
+);
+
+const updateUserBaseSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  password: z.string().min(8).optional(),
+  confirmPassword: z.string().min(8).optional(),
+  role: z.enum(["ADMIN", "OFFICER", "PUBLIC"]).optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const updateUserSchema = updateUserBaseSchema.refine(
+  (data) => !data.password || data.password === data.confirmPassword,
+  {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  }
+);
 
 export const userIdParamSchema = z.object({
   id: z.string().uuid('Invalid user ID'),

@@ -9,10 +9,11 @@ import {
   MdOutlineTrendingUp,
 } from "react-icons/md";
 import { HiUsers } from "react-icons/hi2";
-import { useRole } from "../context/RoleContext";
 import { HiOutlineDocumentReport } from "react-icons/hi";
+import { useEffect, useState } from "react";
+import { getRoleFromServer, type UserRole } from "../lib/auth";
 
-const roleSpecificLinks = {
+const roleSpecificLinks: Record<UserRole, Array<{ href: string; icon: any; label: string }>> = {
   admin: [
     { href: "/admin", icon: MdOutlineDashboard, label: "Admin Dashboard" },
     {
@@ -62,8 +63,19 @@ export default function NavigationDrawer({
 }: {
   activePath: string;
 }) {
-  const { role } = useRole();
-  const links = roleSpecificLinks["admin"];
+  const [role, setRole] = useState<UserRole>("public");
+
+  useEffect(() => {
+    let mounted = true;
+    getRoleFromServer().then((r) => {
+      if (mounted) setRole(r);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const links = roleSpecificLinks[role];
 
   return (
     <aside className="fixed left-0 top-0 z-40 mt-20 hidden h-full w-72 flex-col rounded-r-xl bg-surface-container pt-8 shadow-lg lg:flex">

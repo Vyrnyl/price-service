@@ -12,7 +12,7 @@ if (!jwtSecret) {
 export const authService = {
   login: async (input: LoginInput) => {
     const user = await userRepository.findByEmail(input.email);
-
+    
     if (!user || !user.password) {
       throw new AppError('Invalid email or password', 401);
     }
@@ -44,7 +44,7 @@ export const authService = {
         role: user.role,
         isActive: user.isActive,
       },
-      token,
+      accessToken: token,
     };
   },
 };

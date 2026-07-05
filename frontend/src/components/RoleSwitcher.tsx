@@ -1,6 +1,7 @@
 "use client";
 
-import { useRole, type UserRole } from "../context/RoleContext";
+import { useState } from "react";
+import { type UserRole } from "../lib/auth";
 
 const roles: { value: UserRole; label: string }[] = [
   { value: "public", label: "Public User" },
@@ -9,7 +10,7 @@ const roles: { value: UserRole; label: string }[] = [
 ];
 
 export default function RoleSwitcher() {
-  const { role, setRole } = useRole();
+  const [role, setRole] = useState<UserRole>("public");
 
   return (
     <div className="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-2 py-1">
