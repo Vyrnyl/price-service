@@ -1,477 +1,182 @@
-# GitHub Copilot UI Instructions
+# GitHub Copilot Instructions
 
-# Existing Components First
+## General Principles
 
-Before creating any new UI component:
+- Follow the existing project architecture and coding patterns before introducing new ones.
+- Prioritize consistency over creativity.
+- Reuse existing implementations whenever possible.
+- Before creating a new component, hook, service, or utility, search the project for a similar implementation.
+- Do not duplicate functionality that already exists.
 
-- Search the project for an existing component with similar functionality.
-- Reuse it instead of recreating it.
-- If extending a component, preserve its existing styling and API.
-- Do not duplicate components with different visual styles.
+---
 
-Examples:
+# Design System
 
-✓ Reuse existing Button
-✓ Reuse existing Card
-✓ Reuse existing Badge
-✓ Reuse existing Table
-✓ Reuse existing Input
-✓ Reuse existing Modal
+`globals.css` is the single source of truth for the application's design system.
 
-Do not create Button2, CustomCard, DashboardCardNew, etc., unless explicitly requested.
+Always reuse existing:
 
-## Design System
-
-This project already has a complete design system defined in `globals.css`.
-
-Before generating any UI, always inspect `globals.css` and reuse its design tokens.
+- Typography
+- Colors
+- Spacing
+- Border radius
+- Shadows
+- Animations
+- Font family
 
 Do not introduce new design values unless explicitly requested.
+
+Never hardcode:
+
+- Colors
+- Font sizes
+- Border radius
+- Spacing
+- Shadows
+
+Avoid arbitrary Tailwind classes such as:
+
+```tsx
+text-[17px]
+p-[13px]
+rounded-[10px]
+bg-[#004ac6]
+```
+
+Reuse existing utilities and theme tokens instead.
 
 ---
 
 # Typography
 
-Only use the typography classes already defined in the project.
+Always use the typography utilities already defined in `globals.css`.
 
-## Headings
+Examples:
 
-Desktop Hero
+- `text-h1-desktop`
+- `text-h1-mobile`
+- `text-h2-desktop`
+- `text-h3-desktop`
+- `text-body-lg`
+- `text-body-sm`
+- `text-label-caps`
+- `text-price-display`
 
-text-h1-desktop
-
-Mobile Hero
-
-text-h1-mobile
-
-Section Heading
-
-text-h2-desktop
-
-Card Heading
-
-text-h3-desktop
-
-## Body Text
-
-Default paragraph
-
-text-body-lg
-
-Secondary text
-
-text-body-sm
-
-## Labels
-
-Badges
-Table Headers
-Form Labels
-
-text-label-caps
-
-## Price
-
-Always use
-
-text-price-display
-
-Never create custom font sizes like
-
-text-5xl
-text-4xl
-text-xl
-text-lg
-text-sm
-
-unless matching an existing component.
-
-Never use
-
-text-[18px]
-text-[15px]
-text-[22px]
-
----
-
-# Font Family
-
-Always use the global font.
-
-Never change the font-family.
-
-Do not import another font.
-
-Never use
-
-font-serif
-font-mono
-
-unless explicitly requested.
+Do not introduce custom typography scales.
 
 ---
 
 # Colors
 
-Always use colors from the design system.
+Always use the project's theme colors.
 
-Preferred classes
+Examples:
 
-bg-background
-bg-surface
-bg-surface-container
-bg-surface-container-low
-bg-surface-container-high
-bg-primary
-bg-primary-container
-bg-secondary
-bg-tertiary
+- `bg-background`
+- `bg-surface`
+- `bg-primary`
+- `text-primary`
+- `text-on-surface`
+- `text-on-surface-variant`
+- `border-outline`
+- `border-outline-variant`
 
-Text
-
-text-on-surface
-text-on-surface-variant
-text-primary
-text-on-primary
-text-outline
-
-Borders
-
-border-outline
-border-outline-variant
-
-Errors
-
-text-error
-bg-error-container
-
-Never hardcode colors.
-
-Never write
-
-text-blue-500
-bg-red-500
-border-gray-300
-
-Never use arbitrary hex colors.
-
----
-
-# Border Radius
-
-Only use
-
-rounded-lg
-rounded-xl
-rounded-full
-
-or CSS variables already defined.
-
-Never invent
-
-rounded-[6px]
-rounded-[10px]
-rounded-[20px]
-
----
-
-# Shadows
-
-Use existing shadows.
-
-Prefer
-
-data-card-shadow
-
-Avoid creating new shadow utilities.
-
----
-
-# Icons
-
-Always use Material Symbols Outlined when the project uses icons.
-
-Keep icon size consistent.
-
-Default icon size:
-
-24px
-
-Use the existing icon styling.
-
----
-
-# Layout
-
-Containers should use the existing spacing variables.
-
-Desktop
-
-2rem horizontal padding
-
-Mobile
-
-1rem horizontal padding
-
-Prefer
-
-px-4
-
-lg:px-8
-
-when matching existing layouts.
+Never use Tailwind color palettes or hardcoded hex values unless requested.
 
 ---
 
 # Spacing
 
-Follow the spacing scale already used.
+Reuse the spacing scale already used throughout the project.
 
-Small spacing
+Avoid arbitrary spacing values.
 
-gap-1
-gap-2
+Maintain consistent:
 
-Medium spacing
-
-gap-3
-gap-4
-
-Large spacing
-
-gap-6
-gap-8
-
-Sections
-
-gap-10
-gap-12
-
-Avoid arbitrary spacing.
-
-Never generate
-
-gap-[13px]
-mt-[23px]
-px-[27px]
-
-unless it already exists.
+- padding
+- margin
+- gap
+- section spacing
 
 ---
 
 # Components
 
-Before generating a component:
+Always reuse existing UI components before creating new ones.
 
-Search for an existing implementation.
+Examples:
 
-Reuse it whenever possible.
+- Button
+- Card
+- Input
+- Modal
+- Dialog
+- Badge
+- Table
+- Dropdown
+- Sheet
 
-Never redesign an existing UI component.
-
-This includes
-
-Buttons
-
-Cards
-
-Tables
-
-Dialogs
-
-Sheets
-
-Dropdowns
-
-Forms
-
-Navigation
-
-Sidebar
-
-Navbar
-
-Statistics Cards
-
-Dashboard Cards
+Do not recreate an existing component with a different design.
 
 ---
 
-# Forms
+# Component Organization
 
-Inputs must visually match every other form.
+Components should be:
 
-Reuse
+- Small
+- Focused
+- Easy to understand
+- Easy to test
+- Easy to reuse
 
-Input
+Avoid creating large files containing hundreds of lines of JSX.
 
-Label
-
-Error Message
-
-Button
-
-spacing
-
-Do not create different form layouts.
-
----
-
-# Buttons
-
-Always reuse the project's existing button component.
-
-Never manually recreate
-
-hover colors
-
-disabled styles
-
-focus rings
-
-padding
-
-radius
-
-font size
-
----
-
-# Cards
-
-Cards should always use
-
-Surface colors
-
-Rounded corners
-
-Existing shadow
-
-Consistent padding
-
-Do not invent new card styles.
-
----
-
-# Tables
-
-All tables must follow the existing dashboard style.
-
-Reuse
-
-header typography
-
-row height
-
-hover state
-
-border colors
-
-padding
-
-badge styling
-
----
-
-# Responsive Design
-
-Desktop-first components must also support mobile.
-
-Reuse existing breakpoints.
-
-Prefer
-
-sm:
-
-md:
-
-lg:
-
-xl:
-
-Do not create custom media queries.
-
----
-
-# Animations
-
-Reuse existing animations.
-
-Current project animation
-
-animate-stats
-
-Do not introduce new animation timing unless requested.
-
----
-
-# Accessibility
-
-Every interactive component must include
-
-Keyboard navigation
-
-Visible focus state
-
-aria-label when necessary
-
-disabled state
-
-loading state
-
----
-
-# Code Consistency
-
-Before writing a new component:
-
-1. Search for a similar component.
-2. Match its spacing.
-3. Match its typography.
-4. Match its colors.
-5. Match its border radius.
-6. Match its padding.
-7. Match its icon size.
-8. Match its responsiveness.
-
-Consistency is always preferred over creating a new style.
-
----
-
-# When Unsure
-
-If multiple examples exist:
-
-Use the style that appears most frequently in the project.
-
-Never introduce a new visual language.
-
-The existing components and globals.css are the source of truth.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Feature-Based Folder Structure
-
-This project follows a feature-based architecture.
-
-Always place files inside their corresponding feature folder.
+Split complex components into smaller components.
 
 Example:
 
+```
+DashboardPage
+├── DashboardHeader
+├── StatisticsSection
+│   ├── StatisticCard
+│   └── StatisticGrid
+├── CommodityTable
+├── RecentActivity
+└── Pagination
+```
+
+Each component should have a single responsibility.
+
+---
+
+# Component Responsibilities
+
+UI components should only:
+
+- Render UI
+- Receive props
+- Handle UI interactions
+
+Avoid putting inside components:
+
+- API requests
+- Business logic
+- Data transformation
+- Validation logic
+
+Move those responsibilities to hooks or services.
+
+---
+
+# Feature-Based Architecture
+
+Every feature should remain self-contained.
+
+Example:
+
+```
 features/
 └── auth/
     ├── api/
@@ -480,27 +185,9 @@ features/
     ├── schemas/
     ├── services/
     ├── types/
+```
 
-Do not place feature-specific code outside its feature.
-
----
-
-# Standard Feature Structure
-
-Every feature should follow this structure when applicable.
-
-features/
-└── feature-name/
-    ├── api/
-    ├── components/
-    ├── hooks/
-    ├── schemas/
-    ├── services/
-    ├── types/
-
-Create folders only when they are needed.
-
-Do not create empty folders.
+Only create folders that are actually needed.
 
 ---
 
@@ -508,21 +195,17 @@ Do not create empty folders.
 
 ## api/
 
-Contains API request functions.
+Contains HTTP requests only.
 
-Examples
+Examples:
 
-login.ts
+- login.ts
+- register.ts
+- getUsers.ts
 
-register.ts
-
-getUsers.ts
-
-createCommodity.ts
+No UI logic.
 
 No business logic.
-
-No UI.
 
 ---
 
@@ -530,33 +213,35 @@ No UI.
 
 Contains business logic.
 
-Examples
+Examples:
 
-auth.service.ts
+- auth.service.ts
+- commodity.service.ts
 
-price.service.ts
+Responsibilities:
 
-dashboard.service.ts
-
-Services may call API functions and transform data.
-
-Do not perform HTTP requests directly inside components.
+- Transform API responses
+- Business rules
+- Feature workflows
 
 ---
 
 ## hooks/
 
-Contains custom React hooks.
+Contains reusable React hooks.
 
-Examples
+Examples:
 
-useLogin.ts
+- useLogin.ts
+- useUsers.ts
+- useDashboard.ts
 
-useUsers.ts
+Responsibilities:
 
-useDashboard.ts
-
-Hooks should manage state and side effects.
+- State management
+- Loading state
+- Error handling
+- Calling services
 
 ---
 
@@ -564,190 +249,165 @@ Hooks should manage state and side effects.
 
 Contains validation schemas.
 
-Examples
+Prefer Zod.
 
-login.schema.ts
+Examples:
 
-register.schema.ts
-
-commodity.schema.ts
-
-Use Zod for validation.
-
-Do not place schemas inside components.
+- login.schema.ts
+- register.schema.ts
 
 ---
 
 ## types/
 
-Contains feature-specific types and interfaces.
+Contains feature-specific TypeScript types.
 
-Examples
+Examples:
 
-auth.types.ts
-
-commodity.types.ts
-
-dashboard.types.ts
-
-Avoid duplicating shared types.
+- auth.types.ts
+- commodity.types.ts
 
 ---
 
 ## components/
 
-Contains reusable UI for the feature.
+Contains reusable UI components for that feature.
 
-Examples
+Examples:
 
-LoginForm.tsx
-
-RegisterForm.tsx
-
-UserCard.tsx
-
-PriceTable.tsx
-
-Components should focus only on presentation.
-
-Avoid embedding API logic directly inside components.
+- LoginForm.tsx
+- UserCard.tsx
+- CommodityTable.tsx
 
 ---
 
 # Shared Code
 
-Only place code outside features if it is shared across multiple features.
+Only place code outside `features` if it is shared by multiple features.
 
-Examples
+Examples:
 
+```
 components/
-lib/
 hooks/
-types/
+lib/
 utils/
+types/
+constants/
+```
 
-If code belongs to only one feature, keep it inside that feature.
-
----
-
-# Import Rules
-
-Prefer imports from within the same feature.
-
-Avoid importing across unrelated features.
-
-Shared logic should live in shared folders.
+Feature-specific code should remain inside its feature folder.
 
 ---
 
-# Naming
+# Naming Conventions
 
-Folders
+Folders:
 
-lowercase
+- lowercase
 
-Example
+Examples:
 
+```
 auth
-
 dashboard
-
-users
-
 commodities
+users
+```
 
-Files
+React components:
 
-PascalCase for React components.
+- PascalCase
 
+Examples:
+
+```
 LoginForm.tsx
-
 DashboardCard.tsx
+```
 
-camelCase or kebab-case for non-components, following the existing project convention.
+Hooks:
 
-Examples
-
-login.schema.ts
-
-auth.service.ts
-
+```
 useLogin.ts
+useDashboard.ts
+```
+
+Schemas:
+
+```
+login.schema.ts
+commodity.schema.ts
+```
+
+Services:
+
+```
+auth.service.ts
+dashboard.service.ts
+```
+
+Types:
+
+```
+auth.types.ts
+dashboard.types.ts
+```
 
 ---
 
-# Component Responsibilities
+# Imports
 
-Components should
+Prefer importing from the same feature.
 
-Render UI
+Avoid unnecessary cross-feature dependencies.
 
-Receive props
-
-Call hooks
-
-Avoid
-
-HTTP requests
-
-Business logic
-
-Data transformation
+Extract truly shared code into shared directories.
 
 ---
 
-# API Layer
+# Responsive Design
 
-API functions should only
+Follow the project's existing responsive patterns.
 
-Send requests
+Prefer existing breakpoints:
 
-Receive responses
+- sm
+- md
+- lg
+- xl
 
-Handle request configuration
-
-Avoid UI logic.
-
----
-
-# Service Layer
-
-Services should
-
-Transform API responses
-
-Handle business rules
-
-Map data
-
-Coordinate feature workflows
+Do not introduce custom media queries unless necessary.
 
 ---
 
-# Hooks
+# Accessibility
 
-Hooks should
+Interactive components should support:
 
-Manage state
-
-Manage loading
-
-Manage errors
-
-Call services
-
-Expose clean data to components
+- Keyboard navigation
+- Focus states
+- Disabled states
+- Loading states
+- Appropriate `aria-*` attributes
 
 ---
 
-# Consistency
+# Consistency Checklist
 
-Before creating a file
+Before generating code:
 
-1. Search for an existing implementation.
-2. Follow the same folder structure.
-3. Match naming conventions.
-4. Match code organization.
-5. Reuse existing patterns instead of introducing new ones.
+- Search for similar implementations.
+- Match existing folder structure.
+- Match naming conventions.
+- Match typography.
+- Match spacing.
+- Match colors.
+- Match border radius.
+- Match responsiveness.
+- Reuse components whenever possible.
+- Keep components small and maintainable.
+- Keep business logic outside UI components.
+- Follow the project's architecture instead of creating new patterns.
 
-Never invent a new architecture if the project already has one.
+When unsure, always follow the style that is already used most frequently in the project.
