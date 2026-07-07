@@ -1,5 +1,5 @@
 import AppShell from "../../../components/AppShell";
-import CommodityListPage from "../../../components/CommodityListPage";
+import CommodityListPage from "../../../features/commodity/CommodityListPage";
 
 export default function CommodityListRoute() {
   return (

@@ -1,5 +1,5 @@
 import AppShell from "../../../components/AppShell";
-import PriceAnalysisPage from "../../../components/PriceAnalysisPage";
+import PriceAnalysisPage from "../../../features/public/PriceAnalysisPage";
 
 export default function PriceAnalysisRoute() {
   return (

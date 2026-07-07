@@ -1,5 +1,5 @@
 import AppShell from "@/components/AppShell";
-import CommodityManagementPage from "@/components/CommodityManagementPage";
+import CommodityManagementPage from "@/features/commodity/CommodityManagementPage";
 
 export default function AdminCommoditiesRoute() {
   return (

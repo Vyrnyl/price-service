@@ -1,5 +1,5 @@
 import AppShell from "../../../../components/AppShell";
-import StoreRegistryPage from "../../../../components/StoreRegistryPage";
+import StoreRegistryPage from "../../../../features/officer/StoreRegistryPage";
 
 export default function OfficerStoreRoute() {
   return (

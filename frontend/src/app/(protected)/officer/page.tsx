@@ -1,5 +1,5 @@
 import AppShell from "@/components/AppShell";
-import MonitoringOfficerDashboardPage from "@/components/MonitoringOfficerDashboardPage";
+import MonitoringOfficerDashboardPage from "@/features/officer/MonitoringOfficerDashboardPage";
 
 export default function MonitoringOfficerRoute() {
   return (

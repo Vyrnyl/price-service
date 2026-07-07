@@ -1,3 +1,5 @@
+import { apiFetch } from "./api";
+
 export type UserRole = "public" | "officer" | "admin";
 
 export async function getRoleFromServer(): Promise<UserRole> {
@@ -11,4 +13,11 @@ export async function getRoleFromServer(): Promise<UserRole> {
   } catch {
     return "public";
   }
+}
+
+export async function logoutFromServer(): Promise<void> {
+  await apiFetch<{ success: boolean }>("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+  });
 }

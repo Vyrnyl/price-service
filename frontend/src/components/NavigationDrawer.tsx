@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   MdOutlineDashboard,
   MdOutlineInventory2,
+  MdOutlineLogout,
   MdOutlineSettings,
   MdOutlineStorefront,
   MdOutlineTrendingUp,
@@ -11,7 +12,8 @@ import {
 import { HiUsers } from "react-icons/hi2";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { useEffect, useState } from "react";
-import { getRoleFromServer, type UserRole } from "../lib/auth";
+import { useRouter } from "next/navigation";
+import { getRoleFromServer, logoutFromServer, type UserRole } from "../lib/auth";
 
 const roleSpecificLinks: Record<UserRole, Array<{ href: string; icon: any; label: string }>> = {
   admin: [
@@ -64,6 +66,7 @@ export default function NavigationDrawer({
   activePath: string;
 }) {
   const [role, setRole] = useState<UserRole>("public");
+  const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
@@ -76,6 +79,17 @@ export default function NavigationDrawer({
   }, []);
 
   const links = roleSpecificLinks[role];
+
+  const handleLogout = async () => {
+    try {
+      await logoutFromServer();
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+
+    setRole("public");
+    router.push("/login");
+  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 mt-20 hidden h-full w-72 flex-col rounded-r-xl bg-surface-container pt-8 shadow-lg lg:flex">
@@ -104,6 +118,16 @@ export default function NavigationDrawer({
             </Link>
           );
         })}
+        {role !== "public" ? (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mx-2 mt-2 flex items-center gap-4 rounded-full px-6 py-3 text-on-surface-variant transition-all hover:bg-surface-variant"
+          >
+            <MdOutlineLogout />
+            <span className="font-body-sm text-body-sm">Logout</span>
+          </button>
+        ) : null}
         <hr className="mx-6 my-4 border-outline-variant" />
       </nav>
     </aside>

@@ -262,7 +262,7 @@ export default function ReportGenerationPage() {
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzBXzwP-fyXhkYjAjcOF7jaW41b839OgUynqq-x_r6nbHSqQozC_nFPTUmjyRgm64L9OV8Ogz4DInno2xWjVqcxeRzSyKWTZaJ0bLb1z_rvRtApf_sfJDMOgRUhY8PBEp9-hDhJxfX_tCyznNM9wK_VA2Yl2HbihVjn5A4hG64jxvAkFvTbDq5AQIKp3W_VBIeoj2nGJNvIGyItrrlsPgitKnSTiKdvVDp7IfI16dmJPv-mTgIQdO_hQfQOVh-JqqRXliRe0SFydE"
                   alt="Modern analytics dashboard preview"
                 />
-                <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent p-6">
+                <div className="absolute inset-0 flex flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-6">
                   <p className="text-h3-desktop font-bold text-white">Need custom analytics?</p>
                   <p className="text-body-sm text-white/80">Contact the IT department for specialized data queries.</p>
                 </div>
