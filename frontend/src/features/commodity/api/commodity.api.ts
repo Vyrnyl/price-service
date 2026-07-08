@@ -1,0 +1,59 @@
+import { apiFetch } from "../../../lib/api";
+import type { CommodityStatus } from "../commodity.schema";
+
+export interface CommodityItem {
+  id: string;
+  name: string;
+  status: CommodityStatus;
+  category: string;
+}
+
+export interface CommodityApiResponse {
+  status: string;
+  data: CommodityItem[];
+}
+
+export interface CommodityCreateResponse {
+  status: string;
+  data: CommodityItem;
+}
+
+export interface CreateCommodityPayload {
+  name: string;
+  category: string;
+  status: CommodityStatus;
+}
+
+export interface CommodityUpdateResponse {
+  status: string;
+  data: CommodityItem;
+}
+
+export async function getCommodities() {
+  const response = await apiFetch<CommodityApiResponse>("/api/commodities", {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return response.data;
+}
+
+export async function createCommodity(payload: CreateCommodityPayload) {
+  const response = await apiFetch<CommodityCreateResponse>("/api/commodities", {
+    method: "POST",
+    body: payload,
+    credentials: "include",
+  });
+
+  return response.data;
+}
+
+export async function updateCommodity(id: string, payload: Partial<CreateCommodityPayload>) {
+  const response = await apiFetch<CommodityUpdateResponse>(`/api/commodities/${id}`, {
+    method: "PUT",
+    body: payload,
+    credentials: "include",
+  });
+
+  return response.data;
+}

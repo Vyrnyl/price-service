@@ -1,8 +1,11 @@
 import { z } from 'zod';
 
+export const commodityStatusEnum = z.enum(['Active', 'Inactive']);
+export type CommodityStatus = z.infer<typeof commodityStatusEnum>;
+
 export const createCommoditySchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  unit: z.string().min(1, 'Unit is required'),
+  status: commodityStatusEnum,
   category: z.string().min(1, 'Category is required'),
 });
 

@@ -209,7 +209,6 @@ export default function AddUserDialog({
               <option value="">Select role</option>
               <option value="ADMIN">Administrator</option>
               <option value="OFFICER">Officer</option>
-              <option value="PUBLIC">Public</option>
             </select>
             {renderFieldError("role")}
           </div>

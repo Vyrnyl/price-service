@@ -17,42 +17,6 @@ import UsersSearchFilters from "./UsersSearchFilters";
 import UsersStatsSection from "./UsersStatsSection";
 import UsersTable from "./UsersTable";
 
-const stats = [
-  {
-    label: "Total Users",
-    value: "142",
-    trend: "+4 this month",
-    icon: MdOutlineGroup,
-    accent: "text-primary bg-primary-fixed",
-    trendTone: "text-secondary",
-  },
-  {
-    label: "Admins",
-    value: "12",
-    trend: "Security oversight",
-    icon: MdOutlineShield,
-    accent: "text-primary bg-primary-fixed",
-    trendTone: "text-on-surface-variant",
-  },
-  {
-    label: "Officers",
-    value: "86",
-    trend: "Data processing",
-    icon: MdOutlineFactCheck,
-    accent: "text-secondary bg-secondary-fixed",
-    trendTone: "text-on-surface-variant",
-  },
-  {
-    label: "Monitors",
-    value: "44",
-    trend: "Field agents",
-    icon: MdOutlineVisibility,
-    accent: "text-tertiary bg-tertiary-fixed",
-    trendTone: "text-on-surface-variant",
-  },
-];
-
-
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [formOpen, setFormOpen] = useState(false);
@@ -63,6 +27,46 @@ export default function UsersManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<"ALL" | UserRole>("ALL");
   const [showActiveOnly, setShowActiveOnly] = useState(false);
+
+  const totalUsers = users.length;
+  const adminCount = users.filter((user) => user.role === "ADMIN").length;
+  const officerCount = users.filter((user) => user.role === "OFFICER").length;
+  const activeUsersCount = users.filter((user) => user.isActive).length;
+
+  const stats = [
+    {
+      label: "Total Users",
+      value: String(totalUsers),
+      trend: `${totalUsers} accounts`,
+      icon: MdOutlineGroup,
+      accent: "text-primary bg-primary-fixed",
+      trendTone: "text-secondary",
+    },
+    {
+      label: "Admins",
+      value: String(adminCount),
+      trend: `${adminCount} admin accounts`,
+      icon: MdOutlineShield,
+      accent: "text-primary bg-primary-fixed",
+      trendTone: "text-on-surface-variant",
+    },
+    {
+      label: "Officers",
+      value: String(officerCount),
+      trend: `${officerCount} officer accounts`,
+      icon: MdOutlineFactCheck,
+      accent: "text-secondary bg-secondary-fixed",
+      trendTone: "text-on-surface-variant",
+    },
+    {
+      label: "Active Users",
+      value: String(activeUsersCount),
+      trend: `${activeUsersCount} active accounts`,
+      icon: MdOutlineVisibility,
+      accent: "text-tertiary bg-tertiary-fixed",
+      trendTone: "text-on-surface-variant",
+    },
+  ];
 
   useEffect(() => {
     const loadUsers = async () => {

@@ -1,65 +1,30 @@
-"use client";
+﻿"use client";
 
+import { useEffect, useState, type ComponentType } from "react";
 import {
-  MdAdd,
   MdError,
-  MdInventory2,
   MdKeyboardArrowDown,
   MdLocalDining,
   MdLocalGroceryStore,
   MdNotificationsActive,
   MdSearch,
-  MdStore,
   MdTrendingDown,
   MdVerifiedUser,
 } from "react-icons/md";
+import { getCommodities, type CommodityItem } from "./api/commodity.api";
 
-const tableRows = [
-  {
-    name: "Rice (Well-milled)",
-    category: "Grains",
-    store: "ABC Supermarket",
-    current: "₱58.00",
-    srp: "₱55.00",
-    status: "Above SRP (+₱3)",
-    statusTone: "bg-error text-on-error",
-    icon: MdLocalDining,
-    iconBg: "bg-primary-container/10 text-primary",
-  },
-  {
-    name: "Cooking Oil",
-    category: "Basic",
-    store: "Virac Public Market",
-    current: "₱85.00",
-    srp: "₱85.00",
-    status: "Compliant",
-    statusTone: "bg-[#00897B] text-on-primary",
-    icon: MdLocalGroceryStore,
-    iconBg: "bg-primary-container/10 text-primary",
-  },
-  {
-    name: "Canned Sardines",
-    category: "Canned",
-    store: "SaveMore Virac",
-    current: "₱19.50",
-    srp: "₱21.00",
-    status: "Below SRP",
-    statusTone: "bg-tertiary-container text-on-tertiary",
-    icon: MdInventory2,
-    iconBg: "bg-primary-container/10 text-primary",
-  },
-  {
-    name: "Sugar (Refined)",
-    category: "Condiments",
-    store: "Gaisano Catanduanes",
-    current: "₱98.00",
-    srp: "₱95.00",
-    status: "Above SRP (+₱3)",
-    statusTone: "bg-error text-on-error",
-    icon: MdStore,
-    iconBg: "bg-primary-container/10 text-primary",
-  },
-];
+interface CommodityRow {
+  id: string;
+  name: string;
+  category: string;
+  commodityStatus: string;
+  current: string;
+  srp: string;
+  status: string;
+  statusTone: string;
+  icon: ComponentType<{ className?: string; size?: number }>;
+  iconBg: string;
+}
 
 const activityFeed = [
   {
@@ -95,7 +60,41 @@ const activityFeed = [
   },
 ];
 
+function mapCommoditiesToRows(commodities: CommodityItem[]): CommodityRow[] {
+  return commodities.map((commodity, index) => ({
+    id: commodity.id,
+    name: commodity.name,
+    category: commodity.category,
+    commodityStatus: commodity.status || "Unknown",
+    current: "N/A",
+    srp: "_",
+    status: "Unknown",
+    statusTone: "bg-surface-container/10 text-on-surface-variant",
+    icon: index % 2 === 0 ? MdLocalDining : MdLocalGroceryStore,
+    iconBg: "bg-primary-container/10 text-primary",
+  }));
+}
+
 export default function CommodityListPage() {
+  const [tableRows, setTableRows] = useState<CommodityRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadCommodities() {
+      try {
+        const commodities = await getCommodities();
+        setTableRows(mapCommoditiesToRows(commodities));
+      } catch {
+        setError("Unable to load commodities. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    void loadCommodities();
+  }, []);
+
   return (
     <main className="flex-1 overflow-y-auto overflow-x-hidden p-container-margin-mobile md:p-container-margin-desktop lg:ml-72">
       <section className="space-y-4 pb-6">
@@ -117,6 +116,7 @@ export default function CommodityListPage() {
               className="w-full rounded-xl border border-outline-variant bg-surface py-2.5 pl-10 pr-3 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="Search Commodity..."
               type="text"
+              disabled
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -138,6 +138,12 @@ export default function CommodityListPage() {
       </section>
 
       <div className="space-y-4">
+        {error ? (
+          <div className="rounded-xl border border-error bg-error/10 p-4 text-sm text-error">
+            {error}
+          </div>
+        ) : null}
+
         <div className="overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-left">
@@ -145,48 +151,62 @@ export default function CommodityListPage() {
                 <tr className="border-b border-outline-variant bg-surface-container-low">
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Commodity</th>
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Category</th>
-                  <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Store</th>
+                  <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Status</th>
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Current</th>
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">SRP</th>
-                  <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Status</th>
+                  <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Compliance</th>
                 </tr>
               </thead>
               <tbody>
-                {tableRows.map((row, index) => {
-                  const Icon = row.icon;
-                  return (
-                    <tr
-                      key={row.name}
-                      className="border-b border-outline-variant transition-colors last:border-b-0 hover:bg-surface-container"
-                    >
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${row.iconBg}`}>
-                            <Icon className="text-base" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-semibold text-on-surface">{row.name}</div>
-                            <div className="text-[11px] text-outline">
-                              Last updated: {index === 0 ? "2h ago" : index === 1 ? "5h ago" : index === 2 ? "1d ago" : "3h ago"}
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-sm text-on-surface-variant">
+                      Loading commodities...
+                    </td>
+                  </tr>
+                ) : tableRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-sm text-on-surface-variant">
+                      No commodities found.
+                    </td>
+                  </tr>
+                ) : (
+                  tableRows.map((row, index) => {
+                    const Icon = row.icon;
+                    return (
+                      <tr
+                        key={row.id}
+                        className="border-b border-outline-variant transition-colors last:border-b-0 hover:bg-surface-container"
+                      >
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${row.iconBg}`}>
+                              <Icon className="text-base" />
+                            </div>
+                            <div>
+                              <div className="text-sm font-semibold text-on-surface">{row.name}</div>
+                              <div className="text-[11px] text-outline">
+                                Last updated: {index === 0 ? "2h ago" : index === 1 ? "5h ago" : index === 2 ? "1d ago" : "3h ago"}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="rounded-md bg-surface-variant px-2.5 py-1 text-xs text-on-surface-variant">{row.category}</span>
-                      </td>
-                      <td className="px-3 py-3 text-sm text-on-surface-variant">{row.store}</td>
-                      <td className="px-3 py-3 text-sm font-semibold text-on-surface">{row.current}</td>
-                      <td className="px-3 py-3 text-sm text-outline">{row.srp}</td>
-                      <td className="px-3 py-3">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide shadow-sm ${row.statusTone}`}>
-                          {row.status.includes("Above") ? <MdError size={12} /> : row.status === "Compliant" ? <MdVerifiedUser size={12} /> : row.status === "Below SRP" ? <MdTrendingDown size={12} /> : <MdError size={12} />}
-                          {row.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+                        <td className="px-3 py-3">
+                          <span className="rounded-md bg-surface-variant px-2.5 py-1 text-xs text-on-surface-variant">{row.category}</span>
+                        </td>
+                        <td className="px-3 py-3 text-sm text-on-surface-variant">{row.commodityStatus}</td>
+                        <td className="px-3 py-3 text-sm font-semibold text-on-surface">{row.current}</td>
+                        <td className="px-3 py-3 text-sm text-outline">{row.srp}</td>
+                        <td className="px-3 py-3">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide shadow-sm ${row.statusTone}`}>
+                            {row.status.includes("Above") ? <MdError size={12} /> : row.status === "Compliant" ? <MdVerifiedUser size={12} /> : row.status === "Below SRP" ? <MdTrendingDown size={12} /> : <MdError size={12} />}
+                            {row.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
