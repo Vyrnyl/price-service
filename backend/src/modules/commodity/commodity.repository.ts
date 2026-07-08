@@ -7,10 +7,31 @@ export const commodityRepository = {
     prisma.commodity.create({ data }),
 
   findAll: () =>
-    prisma.commodity.findMany(),
+    prisma.commodity.findMany({
+      include: {
+        srps: {
+          orderBy: [
+            { effectiveDate: "desc" },
+            { createdAt: "desc" },
+          ],
+          take: 1,
+        },
+      },
+    }),
 
   findById: (id: string) =>
-    prisma.commodity.findUnique({ where: { id } }),
+    prisma.commodity.findUnique({
+      where: { id },
+      include: {
+        srps: {
+          orderBy: [
+            { effectiveDate: "desc" },
+            { createdAt: "desc" },
+          ],
+          take: 1,
+        },
+      },
+    }),
 
   update: (id: string, data: UpdateCommodityInput) =>
     prisma.commodity.update({ where: { id }, data }),

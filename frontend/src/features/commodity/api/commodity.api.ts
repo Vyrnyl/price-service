@@ -1,11 +1,17 @@
 import { apiFetch } from "../../../lib/api";
 import type { CommodityStatus } from "../commodity.schema";
+import type { SrpItem } from "./srp.api";
 
 export interface CommodityItem {
   id: string;
   name: string;
   status: CommodityStatus;
   category: string;
+  srps?: SrpItem[];
+}
+
+export interface CommodityDetailsItem extends CommodityItem {
+  srps?: SrpItem[];
 }
 
 export interface CommodityApiResponse {
@@ -52,6 +58,20 @@ export async function updateCommodity(id: string, payload: Partial<CreateCommodi
   const response = await apiFetch<CommodityUpdateResponse>(`/api/commodities/${id}`, {
     method: "PUT",
     body: payload,
+    credentials: "include",
+  });
+
+  return response.data;
+}
+
+export interface CommodityDetailResponse {
+  status: string;
+  data: CommodityDetailsItem;
+}
+
+export async function getCommodityById(id: string) {
+  const response = await apiFetch<CommodityDetailResponse>(`/api/commodities/${id}`, {
+    method: "GET",
     credentials: "include",
   });
 

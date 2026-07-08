@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState, type ComponentType } from "react";
+import { apiFetch } from "../../../lib/api";
 import {
   MdOutlineInventory2,
   MdOutlineTrendingUp,
@@ -9,51 +13,53 @@ import {
   MdOutlineCheckCircle,
 } from "react-icons/md";
 import { FiUsers } from "react-icons/fi";
-import { IoFilterOutline, IoWarningOutline } from "react-icons/io5";
+import { IoFilterOutline } from "react-icons/io5";
 import { IoMdAdd, IoMdMore } from "react-icons/io";
 import { LuDownload } from "react-icons/lu";
-const stats = [
+
+type DashboardStat = {
+  label: string;
+  value: string;
+  meta?: string;
+  icon: ComponentType<{ className?: string; size?: number }>;
+  iconBg: string;
+  iconColor: string;
+  valueColor?: string;
+  metaStyle?: string;
+};
+
+const initialStats: DashboardStat[] = [
   {
     label: "Total Commodities",
-    value: "120",
-    meta: "+2 new",
+    value: "—",
+    meta: "Loading...",
     icon: MdOutlineInventory2,
     iconBg: "bg-primary-container/10",
     iconColor: "text-primary",
   },
   {
     label: "Monitored Prices",
-    value: "1.2k",
-    meta: "Updated 1h ago",
+    value: "—",
+    meta: "Loading...",
     icon: MdOutlineTrendingUp,
     iconBg: "bg-tertiary-container/10",
     iconColor: "text-tertiary",
   },
   {
     label: "Total Stores",
-    value: "65",
-    meta: "6 Active Regions",
+    value: "—",
+    meta: "Loading...",
     icon: MdOutlineStorefront,
     iconBg: "bg-secondary-container/10",
     iconColor: "text-secondary",
   },
   {
     label: "Total Users",
-    value: "12",
-    meta: "",
+    value: "—",
+    meta: "Loading...",
     icon: FiUsers,
     iconBg: "bg-outline-variant/20",
     iconColor: "text-on-surface-variant",
-  },
-  {
-    label: "Violations",
-    value: "18",
-    meta: "Critical",
-    icon: IoWarningOutline,
-    iconBg: "bg-error-container/20",
-    iconColor: "text-error",
-    valueColor: "text-error",
-    metaStyle: "text-error bg-error/10 animate-pulse",
   },
 ];
 
@@ -137,6 +143,65 @@ const watchlistRows = [
 ];
 
 export default function AdminDashboardPage() {
+  const [stats, setStats] = useState<DashboardStat[]>(initialStats);
+
+  useEffect(() => {
+    async function loadDashboardStats() {
+      try {
+        const [commodityResponse, storeResponse, userResponse, priceRecordResponse] = await Promise.all([
+          apiFetch<{ status: string; data: unknown[] }>("/api/commodities"),
+          apiFetch<{ status: string; data: unknown[] }>("/api/stores"),
+          apiFetch<unknown[]>("/api/users"),
+          apiFetch<unknown[]>("/api/price-records"),
+        ]);
+
+        const totalCommodities = String(commodityResponse.data.length);
+        const totalStores = String(storeResponse.data.length);
+        const totalUsers = String(userResponse.length);
+        const monitoredPrices = String(0);
+
+        setStats([
+          {
+            label: "Total Commodities",
+            value: totalCommodities,
+            meta: `${totalCommodities} tracked`,
+            icon: MdOutlineInventory2,
+            iconBg: "bg-primary-container/10",
+            iconColor: "text-primary",
+          },
+          {
+            label: "Monitored Prices",
+            value: monitoredPrices,
+            meta: "Recent submissions",
+            icon: MdOutlineTrendingUp,
+            iconBg: "bg-tertiary-container/10",
+            iconColor: "text-tertiary",
+          },
+          {
+            label: "Total Stores",
+            value: totalStores,
+            meta: "Monitored locations",
+            icon: MdOutlineStorefront,
+            iconBg: "bg-secondary-container/10",
+            iconColor: "text-secondary",
+          },
+          {
+            label: "Total Users",
+            value: totalUsers,
+            meta: "Active accounts",
+            icon: FiUsers,
+            iconBg: "bg-outline-variant/20",
+            iconColor: "text-on-surface-variant",
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to load dashboard stats", error);
+      }
+    }
+
+    loadDashboardStats();
+  }, []);
+
   return (
     <main className="min-h-screen lg:ml-72">
       <section className="px-container-margin-mobile py-12 md:px-container-margin-desktop">
@@ -262,7 +327,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="flex min-h-105 w-full flex-col rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8 xl:w-[360px]">
+            <div className="flex min-h-105 w-full flex-col rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8 xl:w-90">
               <div className="mb-6 flex items-center justify-between">
                 <h4 className="font-h3-desktop text-h3-desktop text-on-surface">
                   Recent Activity
