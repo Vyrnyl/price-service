@@ -13,9 +13,16 @@ import { HiUsers } from "react-icons/hi2";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getRoleFromServer, logoutFromServer, type UserRole } from "../lib/auth";
+import {
+  getRoleFromServer,
+  logoutFromServer,
+  type UserRole,
+} from "../lib/auth";
 
-const roleSpecificLinks: Record<UserRole, Array<{ href: string; icon: any; label: string }>> = {
+const roleSpecificLinks: Record<
+  UserRole,
+  Array<{ href: string; icon: any; label: string }>
+> = {
   admin: [
     { href: "/admin", icon: MdOutlineDashboard, label: "Admin Dashboard" },
     {
@@ -23,7 +30,17 @@ const roleSpecificLinks: Record<UserRole, Array<{ href: string; icon: any; label
       icon: MdOutlineInventory2,
       label: "Commodities",
     },
+    {
+      href: "/admin/stores",
+      icon: MdOutlineStorefront,
+      label: "Stores",
+    },
     { href: "/admin/users", icon: HiUsers, label: "Users" },
+    {
+      href: "/admin/price-records",
+      icon: MdOutlineTrendingUp,
+      label: "Price Records",
+    },
     { href: "/admin/settings", icon: MdOutlineSettings, label: "Settings" },
   ],
   officer: [
@@ -37,6 +54,11 @@ const roleSpecificLinks: Record<UserRole, Array<{ href: string; icon: any; label
       href: "/officer/stores",
       icon: MdOutlineStorefront,
       label: "Store Registry",
+    },
+    {
+      href: "/officer/price-records",
+      icon: MdOutlineTrendingUp,
+      label: "Price Records",
     },
     {
       href: "/officer/reports",

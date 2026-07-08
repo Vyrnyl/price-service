@@ -5,10 +5,8 @@ const priceStatusEnum = z.enum(['COMPLIANT', 'OVERPRICE', 'UNDERPRICE']);
 export const createPriceRecordSchema = z.object({
   commodityId: z.string().uuid('Invalid commodity ID'),
   storeId: z.string().uuid('Invalid store ID'),
-  userId: z.string().uuid('Invalid user ID'),
   price: z.coerce.number().positive('Price must be greater than 0'),
-  date: z.coerce.date(),
-  photoUrl: z.string().min(1, 'Photo URL is required'),
+  dateAndTime: z.coerce.date(),
   status: priceStatusEnum,
 });
 

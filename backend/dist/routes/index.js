@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_routes_1 = __importDefault(require("../modules/auth/auth.routes"));
 const user_routes_1 = __importDefault(require("../modules/user/user.routes"));
 const commodity_routes_1 = __importDefault(require("../modules/commodity/commodity.routes"));
 const srp_routes_1 = __importDefault(require("../modules/srp/srp.routes"));
@@ -16,7 +15,6 @@ const router = (0, express_1.Router)();
 router.get('/', (_req, res) => {
     res.json({ status: 'ok', service: 'PresyoSerbisyo' });
 });
-router.use('/auth', auth_routes_1.default);
 router.use('/users', user_routes_1.default);
 router.use('/commodities', commodity_routes_1.default);
 router.use('/srps', srp_routes_1.default);

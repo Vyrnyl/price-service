@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.commodityIdParamSchema = exports.updateCommoditySchema = exports.createCommoditySchema = void 0;
+exports.commodityIdParamSchema = exports.updateCommoditySchema = exports.createCommoditySchema = exports.commodityStatusEnum = void 0;
 const zod_1 = require("zod");
+exports.commodityStatusEnum = zod_1.z.enum(['Active', 'Inactive']);
 exports.createCommoditySchema = zod_1.z.object({
     name: zod_1.z.string().min(1, 'Name is required'),
-    unit: zod_1.z.string().min(1, 'Unit is required'),
+    status: exports.commodityStatusEnum,
     category: zod_1.z.string().min(1, 'Category is required'),
 });
 exports.updateCommoditySchema = exports.createCommoditySchema.partial();

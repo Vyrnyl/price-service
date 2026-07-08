@@ -9,12 +9,17 @@ const store_service_1 = require("./store.service");
 const store_schema_1 = require("./store.schema");
 exports.storeController = {
     createStore: async (req, res) => {
+        const authUser = req.user;
+        if (!authUser) {
+            throw new AppError_1.default('Unauthorized', 401);
+        }
         const validatedBody = store_schema_1.createStoreSchema.parse(req.body);
-        const store = await store_service_1.storeService.createStore(validatedBody);
+        const store = await store_service_1.storeService.createStore(validatedBody, authUser.userId);
         res.status(201).json({ status: 'success', data: store });
     },
-    getStores: async (_req, res) => {
-        const stores = await store_service_1.storeService.getStores();
+    getStores: async (req, res) => {
+        const authUser = req.user;
+        const stores = await store_service_1.storeService.getStores(authUser);
         res.json({ status: 'success', data: stores });
     },
     getStoreById: async (req, res) => {

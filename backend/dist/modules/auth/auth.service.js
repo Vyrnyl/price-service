@@ -38,7 +38,7 @@ exports.authService = {
                 role: user.role,
                 isActive: user.isActive,
             },
-            token,
+            accessToken: token,
         };
     },
 };

@@ -2,17 +2,25 @@ import { Request, Response } from 'express';
 import AppError from '../../utils/AppError';
 import { storeService } from './store.service';
 import { createStoreSchema, updateStoreSchema, storeIdParamSchema } from './store.schema';
+import type { AuthUser } from '../../../types/express';
 
 export const storeController = {
   createStore: async (req: Request, res: Response) => {
+    const authUser = req.user as AuthUser | undefined;
+
+    if (!authUser) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const validatedBody = createStoreSchema.parse(req.body);
-    const store = await storeService.createStore(validatedBody);
+    const store = await storeService.createStore(validatedBody, authUser.userId);
 
     res.status(201).json({ status: 'success', data: store });
   },
 
-  getStores: async (_req: Request, res: Response) => {
-    const stores = await storeService.getStores();
+  getStores: async (req: Request, res: Response) => {
+    const authUser = req.user as AuthUser | undefined;
+    const stores = await storeService.getStores(authUser);
 
     res.json({ status: 'success', data: stores });
   },

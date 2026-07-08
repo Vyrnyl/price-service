@@ -2,8 +2,12 @@ import { prisma } from '../../prisma';
 import type { Prisma } from '@prisma/client';
 import type { CreatePriceRecordInput, UpdatePriceRecordInput } from './price-record.schema';
 
+export type CreatePriceRecordWithUserInput = CreatePriceRecordInput & {
+  userId: string;
+};
+
 export const priceRecordRepository = {
-  create: (data: CreatePriceRecordInput) => {
+  create: (data: CreatePriceRecordWithUserInput) => {
     const { commodityId, storeId, userId, ...rest } = data;
 
     return prisma.priceRecord.create({
@@ -29,13 +33,12 @@ export const priceRecordRepository = {
     }),
 
   update: (id: string, data: UpdatePriceRecordInput) => {
-    const { commodityId, storeId, userId, ...rest } = data;
+    const { commodityId, storeId, ...rest } = data;
 
     const updateData: Prisma.PriceRecordUpdateInput = {
       ...rest,
       ...(commodityId ? { commodity: { connect: { id: commodityId } } } : {}),
       ...(storeId ? { store: { connect: { id: storeId } } } : {}),
-      ...(userId ? { user: { connect: { id: userId } } } : {}),
     };
 
     return prisma.priceRecord.update({

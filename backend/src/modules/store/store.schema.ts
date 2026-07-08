@@ -3,8 +3,7 @@ import { z } from 'zod';
 export const createStoreSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   location: z.string().min(1, 'Location is required'),
-  latitude: z.coerce.number().optional().nullable(),
-  longitude: z.coerce.number().optional().nullable(),
+  lastVisited: z.coerce.date().optional().nullable(),
 });
 
 export const updateStoreSchema = createStoreSchema.partial();

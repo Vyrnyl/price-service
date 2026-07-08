@@ -1,12 +1,23 @@
 import { Request, Response } from 'express';
 import AppError from '../../utils/AppError';
-import { priceRecordService } from './price-record.service';
+import { priceRecordService, type CreatePriceRecordWithUserInput } from './price-record.service';
 import { createPriceRecordSchema, updatePriceRecordSchema, priceRecordIdParamSchema } from './price-record.schema';
+import type { AuthUser } from '../../../types/express';
 
 export const priceRecordController = {
   createPriceRecord: async (req: Request, res: Response) => {
+    const authUser = req.user as AuthUser | undefined;
+
+    if (!authUser) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const validatedBody = createPriceRecordSchema.parse(req.body);
-    const priceRecord = await priceRecordService.createPriceRecord(validatedBody);
+    const payload: CreatePriceRecordWithUserInput = {
+      ...validatedBody,
+      userId: authUser.userId,
+    };
+    const priceRecord = await priceRecordService.createPriceRecord(payload);
 
     res.status(201).json({ status: 'success', data: priceRecord });
   },

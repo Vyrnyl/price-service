@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userService = void 0;
 const AppError_1 = __importDefault(require("../../utils/AppError"));
+const passwordUtils_1 = require("../../utils/passwordUtils");
 const user_repository_1 = require("./user.repository");
 exports.userService = {
     createUser: async (data) => {
@@ -12,7 +13,12 @@ exports.userService = {
         if (existingUser) {
             throw new AppError_1.default('Email already exists', 409);
         }
-        return user_repository_1.userRepository.create(data);
+        const hashedPassword = await passwordUtils_1.passwordUtils.hashPassword(data.password);
+        const { confirmPassword, ...createData } = data;
+        return user_repository_1.userRepository.create({
+            ...createData,
+            password: hashedPassword,
+        });
     },
     getUsers: () => user_repository_1.userRepository.findAll(),
     getUserById: (id) => user_repository_1.userRepository.findById(id),
@@ -23,7 +29,16 @@ exports.userService = {
                 throw new AppError_1.default('Email already exists', 409);
             }
         }
-        return user_repository_1.userRepository.update(id, data);
+        let updateData = { ...data };
+        if (typeof data.password === "string") {
+            const hashedPassword = await passwordUtils_1.passwordUtils.hashPassword(data.password);
+            updateData = {
+                ...updateData,
+                password: hashedPassword,
+            };
+        }
+        const { confirmPassword, ...finalData } = updateData;
+        return user_repository_1.userRepository.update(id, finalData);
     },
     deleteUser: (id) => user_repository_1.userRepository.delete(id),
 };

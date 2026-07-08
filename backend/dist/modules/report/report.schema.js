@@ -7,7 +7,7 @@ exports.createReportSchema = zod_1.z.object({
     type: reportTypeEnum,
     generatedBy: zod_1.z.string().uuid('Invalid user ID'),
     period: zod_1.z.string().min(1, 'Period is required'),
-    fileUrl: zod_1.z.string().url('Invalid file URL'),
+    fileUrl: zod_1.z.string().min(1, 'URL is required'),
 });
 exports.updateReportSchema = exports.createReportSchema.partial();
 exports.reportIdParamSchema = zod_1.z.object({

@@ -13,7 +13,7 @@ exports.userController = {
         const user = await user_service_1.userService.createUser(validatedBody);
         res.status(201).json(user);
     },
-    getUsers: async (_req, res) => {
+    getUsers: async (req, res) => {
         const users = await user_service_1.userService.getUsers();
         res.json(users);
     },
