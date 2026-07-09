@@ -26,6 +26,7 @@ import {
 } from "./api/commodity.api";
 import { createSrp } from "./api/srp.api";
 import type { CommodityStatus } from "./commodity.schema";
+import type { UserRole } from "@/lib/auth";
 
 function mapCommodityToRow(item: CommodityItem, index: number) {
   const latestSrp = item.srps?.[0];
@@ -45,7 +46,12 @@ function mapCommoditiesToRows(commodities: CommodityItem[]): CommodityRow[] {
   return commodities.map(mapCommodityToRow);
 }
 
-export default function CommodityManagementPage() {
+type CommodityManagementPageProps = {
+  userRole: UserRole;
+};
+
+export default function CommodityManagementPage({ userRole }: CommodityManagementPageProps) {
+  const canManage = userRole === "admin";
   const [commodityRows, setCommodityRows] = useState<CommodityRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -282,19 +288,21 @@ export default function CommodityManagementPage() {
                 Track and manage commodity listings, SRP updates, and compliance status.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setEditingCommodity(null);
-                setFormOpen(true);
-                setFormError(null);
-                setFormSuccess(null);
-              }}
-              className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-on-primary shadow-sm transition-all hover:shadow-md"
-            >
-              <MdAddCircle size={20} />
-              New Commodity
-            </button>
+            {canManage ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingCommodity(null);
+                  setFormOpen(true);
+                  setFormError(null);
+                  setFormSuccess(null);
+                }}
+                className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-on-primary shadow-sm transition-all hover:shadow-md"
+              >
+                <MdAddCircle size={20} />
+                New Commodity
+              </button>
+            ) : null}
           </div>
 
           <CommoditySummaryCards cards={summaryCards} />
@@ -316,8 +324,8 @@ export default function CommodityManagementPage() {
                 setCurrentPage(1);
               }}
               onPageChange={setCurrentPage}
-              onOpenUpdateSrp={openUpdateSrpDirect}
-              onEditCommodity={handleEditCommodity}
+              onOpenUpdateSrp={canManage ? openUpdateSrpDirect : undefined}
+              onEditCommodity={canManage ? handleEditCommodity : undefined}
             />
           </div>
         </div>

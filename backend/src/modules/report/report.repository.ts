@@ -3,13 +3,13 @@ import type { Prisma } from '@prisma/client';
 import type { CreateReportInput, UpdateReportInput } from './report.schema';
 
 export const reportRepository = {
-  create: (data: CreateReportInput) => {
-    const { generatedBy, ...rest } = data;
+  create: (data: CreateReportInput, userId: string) => {
+    const { format, commodityGroup, ...rest } = data;
 
     return prisma.report.create({
       data: {
         ...rest,
-        user: { connect: { id: generatedBy } },
+        user: { connect: { id: userId } },
       } as Prisma.ReportCreateInput,
       include: { user: true },
     });
@@ -27,11 +27,9 @@ export const reportRepository = {
     }),
 
   update: (id: string, data: UpdateReportInput) => {
-    const { generatedBy, ...rest } = data;
-
+    const { format, commodityGroup, ...rest } = data;
     const updateData: Prisma.ReportUpdateInput = {
       ...rest,
-      ...(generatedBy ? { user: { connect: { id: generatedBy } } } : {}),
     };
 
     return prisma.report.update({

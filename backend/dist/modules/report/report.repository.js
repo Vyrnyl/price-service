@@ -3,12 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.reportRepository = void 0;
 const prisma_1 = require("../../prisma");
 exports.reportRepository = {
-    create: (data) => {
-        const { generatedBy, ...rest } = data;
+    create: (data, userId) => {
+        const { format, commodityGroup, ...rest } = data;
         return prisma_1.prisma.report.create({
             data: {
                 ...rest,
-                user: { connect: { id: generatedBy } },
+                user: { connect: { id: userId } },
             },
             include: { user: true },
         });
@@ -21,10 +21,9 @@ exports.reportRepository = {
         include: { user: true },
     }),
     update: (id, data) => {
-        const { generatedBy, ...rest } = data;
+        const { format, commodityGroup, ...rest } = data;
         const updateData = {
             ...rest,
-            ...(generatedBy ? { user: { connect: { id: generatedBy } } } : {}),
         };
         return prisma_1.prisma.report.update({
             where: { id },

@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import path from 'path';
 import cors from 'cors';
 import cookieParser from "cookie-parser";
 import apiRoutes from './routes';
@@ -8,6 +9,8 @@ import authRoutes from './modules/auth/auth.routes';
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+const reportsDir = path.resolve(process.cwd(), 'reports');
 
 app.use(cors({
     origin: "http://localhost:3000",
@@ -20,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api', authenticate, apiRoutes);
+app.use('/reports/files', express.static(reportsDir));
 
 app.get('/', (_req: Request, res: Response) => {
   res.json({ message: 'PresyoSerbisyo backend is running' });

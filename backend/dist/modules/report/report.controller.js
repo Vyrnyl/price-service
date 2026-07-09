@@ -7,10 +7,20 @@ exports.reportController = void 0;
 const AppError_1 = __importDefault(require("../../utils/AppError"));
 const report_service_1 = require("./report.service");
 const report_schema_1 = require("./report.schema");
+const report_generator_1 = require("./report.generator");
 exports.reportController = {
     createReport: async (req, res) => {
+        const authUser = req.user;
+        if (!authUser) {
+            throw new AppError_1.default('Unauthorized', 401);
+        }
         const validatedBody = report_schema_1.createReportSchema.parse(req.body);
-        const report = await report_service_1.reportService.createReport(validatedBody);
+        const generated = await (0, report_generator_1.generateReportFile)(validatedBody);
+        const reportPayload = {
+            ...validatedBody,
+            fileUrl: generated.fileUrl,
+        };
+        const report = await report_service_1.reportService.createReport(reportPayload, authUser.userId);
         res.status(201).json({ status: 'success', data: report });
     },
     getReports: async (_req, res) => {

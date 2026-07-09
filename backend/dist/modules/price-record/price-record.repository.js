@@ -23,12 +23,11 @@ exports.priceRecordRepository = {
         include: { commodity: true, store: true, user: true },
     }),
     update: (id, data) => {
-        const { commodityId, storeId, userId, ...rest } = data;
+        const { commodityId, storeId, ...rest } = data;
         const updateData = {
             ...rest,
             ...(commodityId ? { commodity: { connect: { id: commodityId } } } : {}),
             ...(storeId ? { store: { connect: { id: storeId } } } : {}),
-            ...(userId ? { user: { connect: { id: userId } } } : {}),
         };
         return prisma_1.prisma.priceRecord.update({
             where: { id },

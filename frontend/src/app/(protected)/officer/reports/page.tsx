@@ -1,5 +1,5 @@
 import AppShell from "../../../../components/AppShell";
-import ReportGenerationPage from "../../../../features/officer/ReportGenerationPage";
+import ReportGenerationPage from "../../../../features/officer/reports/ReportGenerationPage";
 
 export default function OfficerReportsRoute() {
   return (

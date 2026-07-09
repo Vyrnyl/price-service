@@ -4,7 +4,7 @@ import CommodityManagementPage from "@/features/commodity/CommodityManagementPag
 export default function AdminCommoditiesRoute() {
   return (
     <AppShell activePath="/admin/commodities">
-      <CommodityManagementPage />
+      <CommodityManagementPage userRole="admin" />
     </AppShell>
   );
 }

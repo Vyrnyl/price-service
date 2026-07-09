@@ -16,4 +16,5 @@ export interface StoreFormData {
 
 export interface StoreRegistryPageProps {
   showAssignedOfficer?: boolean;
+  canCreateStore?: boolean;
 }

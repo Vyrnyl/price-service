@@ -2,7 +2,6 @@ import type { PriceRecord } from "@/features/officer/price-records.types";
 
 interface PriceRecordsTableProps {
   records: PriceRecord[];
-  onView?: (recordId: string) => void;
 }
 
 function getStatusClasses(status: string) {
@@ -41,7 +40,6 @@ export default function PriceRecordsTable({ records, onView }: PriceRecordsTable
               <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Commodity</th>
               <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Price & Status</th>
               <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Officer</th>
-              <th className="pb-2 text-right text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20">
@@ -75,15 +73,6 @@ export default function PriceRecordsTable({ records, onView }: PriceRecordsTable
                     </div>
                     <span className="text-body-xs text-on-surface">{record.officerName}</span>
                   </div>
-                </td>
-                <td className="py-3 text-right align-top">
-                  <button
-                    type="button"
-                    onClick={() => onView?.(record.id)}
-                    className="rounded-full border border-outline-variant bg-surface px-3 py-1.5 text-body-xs font-semibold text-primary transition hover:bg-surface-container-highest"
-                  >
-                    View
-                  </button>
                 </td>
               </tr>
             ))}

@@ -1,15 +1,23 @@
 import { z } from 'zod';
 
 const reportTypeEnum = z.enum(['MONTHLY', 'SRP_COMPLIANCE', 'TREND']);
+export type ReportTypeEnum = z.infer<typeof reportTypeEnum>;
+const reportFormatEnum = z.enum(['PDF', 'EXCEL']);
 
 export const createReportSchema = z.object({
   type: reportTypeEnum,
-  generatedBy: z.string().uuid('Invalid user ID'),
   period: z.string().min(1, 'Period is required'),
-  fileUrl: z.string().min(1, 'URL is required'),
+  format: reportFormatEnum,
+  commodityGroup: z.string().optional(),
 });
 
-export const updateReportSchema = createReportSchema.partial();
+export const updateReportSchema = z.object({
+  type: reportTypeEnum.optional(),
+  period: z.string().min(1, 'Period is required').optional(),
+  fileUrl: z.string().min(1, 'URL is required').optional(),
+  format: reportFormatEnum.optional(),
+  commodityGroup: z.string().optional(),
+});
 
 export const reportIdParamSchema = z.object({
   id: z.string().uuid('Invalid report ID'),
@@ -17,3 +25,4 @@ export const reportIdParamSchema = z.object({
 
 export type CreateReportInput = z.infer<typeof createReportSchema>;
 export type UpdateReportInput = z.infer<typeof updateReportSchema>;
+export type ReportFormat = z.infer<typeof reportFormatEnum>;

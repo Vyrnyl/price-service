@@ -1,41 +1,30 @@
-import {
-  MdAssignmentTurnedIn,
-  MdFlag,
-  MdInventory2,
-  MdNotificationsActive,
-  MdSearch,
-  MdStore,
-  MdTrendingUp,
-} from "react-icons/md";
+"use client";
+
+import { useEffect, useState } from "react";
+import { MdInventory2, MdNotificationsActive, MdSearch, MdStore, MdTrendingUp } from "react-icons/md";
+import { apiFetch } from "@/lib/api";
 
 const stats = [
   {
-    label: "Pending Reviews",
-    value: "12",
-    icon: MdAssignmentTurnedIn,
+    label: "Total Commodities",
+    valueKey: "commodities",
+    icon: MdInventory2,
     tone: "text-primary",
     bg: "bg-primary/10",
   },
   {
-    label: "Flagged Items",
-    value: "4",
-    icon: MdFlag,
-    tone: "text-error",
-    bg: "bg-error/10",
-  },
-  {
-    label: "Compliant Stores",
-    value: "31",
+    label: "Added Stores",
+    valueKey: "stores",
     icon: MdStore,
-    tone: "text-[#00897B]",
-    bg: "bg-[#E8F5E9]",
-  },
-  {
-    label: "Price Updates",
-    value: "86",
-    icon: MdTrendingUp,
     tone: "text-secondary",
     bg: "bg-secondary/10",
+  },
+  {
+    label: "Added Price Records",
+    valueKey: "priceRecords",
+    icon: MdTrendingUp,
+    tone: "text-[#00897B]",
+    bg: "bg-[#E8F5E9]",
   },
 ];
 
@@ -70,6 +59,43 @@ const rows = [
 ];
 
 export default function MonitoringOfficerDashboardPage() {
+  const [totalCommodities, setTotalCommodities] = useState(0);
+  const [totalStores, setTotalStores] = useState(0);
+  const [totalPriceRecords, setTotalPriceRecords] = useState(0);
+  const [latestStores, setLatestStores] = useState<Array<{ id: string; name: string; location: string; createdAt: string }>>([]);
+  const [latestPriceRecords, setLatestPriceRecords] = useState<Array<{ id: string; commodity: { name: string }; store: { name: string }; price: string; createdAt: string }>>([]);
+  const [latestReports, setLatestReports] = useState<Array<{ id: string; type: string; period: string; createdAt: string }>>([]);
+
+  useEffect(() => {
+    async function loadDashboardCounts() {
+      try {
+        const [commoditiesResponse, storesResponse, priceRecordsResponse, reportsResponse] = await Promise.all([
+          apiFetch<{ status: string; data: unknown[] }>("/api/commodities"),
+          apiFetch<{ status: string; data: Array<{ id: string; name: string; location: string; createdAt: string }> }>("/api/stores"),
+          apiFetch<{ status: string; data: Array<{ id: string; commodity: { name: string }; store: { name: string }; price: string; createdAt: string }> }>("/api/price-records"),
+          apiFetch<{ status: string; data: Array<{ id: string; type: string; period: string; createdAt: string }> }>("/api/reports"),
+        ]);
+
+        setTotalCommodities(commoditiesResponse.data.length);
+        setTotalStores(storesResponse.data.length);
+        setTotalPriceRecords(priceRecordsResponse.data.length);
+
+        const sortedStores = [...storesResponse.data].sort((a, b) => (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setLatestStores(sortedStores.slice(0, 3));
+
+        const sortedPriceRecords = [...priceRecordsResponse.data].sort((a, b) => (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setLatestPriceRecords(sortedPriceRecords.slice(0, 3));
+
+        const sortedReports = [...reportsResponse.data].sort((a, b) => (new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setLatestReports(sortedReports.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to load dashboard counts", error);
+      }
+    }
+
+    void loadDashboardCounts();
+  }, []);
+
   return (
     <main className="min-h-screen lg:ml-72">
       <section className="px-container-margin-mobile py-12 md:px-container-margin-desktop">
@@ -80,7 +106,7 @@ export default function MonitoringOfficerDashboardPage() {
                 Monitoring Officer Overview
               </h2>
               <p className="mt-1 font-body-lg text-on-surface-variant">
-                Track compliance, reviews, and price updates across the province.
+                Track the latest operational activity in your monitoring area.
               </p>
             </div>
             <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
@@ -92,6 +118,13 @@ export default function MonitoringOfficerDashboardPage() {
           <section className="flex flex-wrap gap-6">
             {stats.map((stat) => {
               const Icon = stat.icon;
+              const value =
+                stat.valueKey === "commodities"
+                  ? totalCommodities
+                  : stat.valueKey === "stores"
+                  ? totalStores
+                  : totalPriceRecords;
+
               return (
                 <div
                   key={stat.label}
@@ -102,14 +135,14 @@ export default function MonitoringOfficerDashboardPage() {
                       <Icon className={stat.tone} size={20} />
                     </span>
                     <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-outline">
-                      Today
+                      Total
                     </span>
                   </div>
                   <p className="mb-1 font-label-caps text-label-caps text-on-surface-variant">
                     {stat.label}
                   </p>
                   <h3 className="text-[28px] font-bold leading-none text-on-surface">
-                    {stat.value}
+                    {value}
                   </h3>
                 </div>
               );
@@ -117,47 +150,72 @@ export default function MonitoringOfficerDashboardPage() {
           </section>
 
           <section className="rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
-            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h3 className="font-h3-desktop text-h3-desktop text-on-surface">
-                  Commodity Compliance
+                  Recent Activity
                 </h3>
-                <p className="text-body-sm text-on-surface-variant">Latest monitoring results</p>
-              </div>
-              <div className="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-3 py-2">
-                <MdSearch className="text-outline" />
-                <span className="text-body-sm text-on-surface-variant">Search commodity</span>
+                <p className="text-body-sm text-on-surface-variant">Latest stores, price records, and reports added to the system.</p>
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full table-fixed text-left">
-                <thead>
-                  <tr className="border-b border-outline-variant/30">
-                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Commodity</th>
-                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Store</th>
-                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Region</th>
-                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Price</th>
-                    <th className="pb-3 text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">SRP</th>
-                    <th className="pb-3 text-right text-[10px] font-label-caps uppercase tracking-[0.24em] text-outline">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/20">
-                  {rows.map((row) => (
-                    <tr key={row.commodity}>
-                      <td className="py-4 font-semibold text-on-surface">{row.commodity}</td>
-                      <td className="py-4 text-body-sm text-on-surface-variant">{row.store}</td>
-                      <td className="py-4 text-body-sm text-on-surface-variant">{row.region}</td>
-                      <td className="py-4 text-body-sm font-semibold text-on-surface">{row.price}</td>
-                      <td className="py-4 text-body-sm text-on-surface-variant">{row.srp}</td>
-                      <td className="py-4 text-right">
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${row.statusClass}`}>
-                          {row.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div className="rounded-3xl border border-outline-variant bg-surface-container-low p-4">
+                <p className="mb-3 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.24em]">
+                  Added Stores
+                </p>
+                <div className="space-y-3">
+                  {latestStores.length > 0 ? (
+                    latestStores.map((store) => (
+                      <div key={store.id} className="rounded-2xl bg-white p-3 shadow-sm">
+                        <p className="font-semibold text-on-surface">{store.name}</p>
+                        <p className="text-body-sm text-on-surface-variant">{store.location}</p>
+                        <p className="mt-2 text-[11px] text-on-surface-variant">{new Date(store.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-body-sm text-on-surface-variant">No recently added stores.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-outline-variant bg-surface-container-low p-4">
+                <p className="mb-3 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.24em]">
+                  Added Price Records
+                </p>
+                <div className="space-y-3">
+                  {latestPriceRecords.length > 0 ? (
+                    latestPriceRecords.map((record) => (
+                      <div key={record.id} className="rounded-2xl bg-white p-3 shadow-sm">
+                        <p className="font-semibold text-on-surface">{record.commodity.name}</p>
+                        <p className="text-body-sm text-on-surface-variant">{record.store.name}</p>
+                        <p className="mt-2 text-[11px] text-on-surface-variant">{new Date(record.createdAt).toLocaleDateString()} • {record.price}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-body-sm text-on-surface-variant">No recent price records.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-3xl border border-outline-variant bg-surface-container-low p-4">
+                <p className="mb-3 font-label-caps text-label-caps text-on-surface-variant uppercase tracking-[0.24em]">
+                  Reports Activity
+                </p>
+                <div className="space-y-3">
+                  {latestReports.length > 0 ? (
+                    latestReports.map((report) => (
+                      <div key={report.id} className="rounded-2xl bg-white p-3 shadow-sm">
+                        <p className="font-semibold text-on-surface">{report.type.replace(/_/g, " ")}</p>
+                        <p className="text-body-sm text-on-surface-variant">{report.period}</p>
+                        <p className="mt-2 text-[11px] text-on-surface-variant">{new Date(report.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-body-sm text-on-surface-variant">No recent report activity.</p>
+                  )}
+                </div>
+              </div>
             </div>
           </section>
         </div>

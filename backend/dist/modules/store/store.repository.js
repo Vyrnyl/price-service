@@ -3,7 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.storeRepository = void 0;
 const prisma_1 = require("../../prisma");
 exports.storeRepository = {
-    create: (data, userId) => prisma_1.prisma.store.create({ data: { ...data, userId } }),
+    create: (data, userId) => prisma_1.prisma.store.create({
+        data: { ...data, userId },
+        include: { user: true },
+    }),
     findAll: (userId) => prisma_1.prisma.store.findMany({
         where: userId ? { userId } : undefined,
         include: { user: true },

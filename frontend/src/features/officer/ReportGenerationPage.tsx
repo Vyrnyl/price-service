@@ -77,7 +77,7 @@ const recentReports = [
     name: "Price_Trend_Weekly_Q2",
     meta: "Generating now...",
     status: "Processing",
-    statusClass: "bg-surface-container-highest text-on-surface-variant",
+    statusClass: "bg-surface-container-lowest text-on-surface-variant",
     statusIcon: MdSync,
     buttonLabel: "Please Wait",
     buttonIcon: MdHourglassEmpty,
@@ -113,12 +113,14 @@ export default function ReportGenerationPage() {
 
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
             <section className="flex flex-col gap-5 xl:col-span-8">
-              <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-                <div className="mb-6 flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-bold text-on-primary">
-                    1
-                  </span>
-                  <h3 className="font-h3-desktop text-h3-desktop">Select Report Type</h3>
+              <div className="rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
+                <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.24em] text-primary">
+                      Step 1
+                    </span>
+                    <h3 className="mt-4 font-h3-desktop text-h3-desktop text-on-surface">Select Report Type</h3>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -127,8 +129,8 @@ export default function ReportGenerationPage() {
                     return (
                       <label
                         key={type.id}
-                        className={`relative flex min-w-52.5 flex-1 cursor-pointer flex-col rounded-2xl border border-outline-variant bg-white p-6 transition-all data-card-shadow ${
-                          type.active ? "border-primary" : "hover:border-primary"
+                        className={`relative flex min-w-0 cursor-pointer flex-col rounded-3xl border border-outline-variant bg-white p-6 transition-all duration-200 hover:border-primary ${
+                          type.active ? "border-primary shadow-sm" : ""
                         }`}
                       >
                         <input readOnly checked={type.active} className="absolute right-4 top-4 text-primary" name="report_type" type="radio" />
@@ -137,16 +139,16 @@ export default function ReportGenerationPage() {
                             <Icon className={type.iconColor} size={24} />
                           </div>
                           {type.meta ? (
-                            <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${type.metaStyle}`}>
+                            <span className={`rounded-full px-3 py-1 text-[10px] font-semibold ${type.metaStyle}`}>
                               {type.meta}
                             </span>
                           ) : null}
                         </div>
-                        <p className="mb-1 font-label-caps text-label-caps text-on-surface-variant">Report Type</p>
-                        <h4 className={`text-[24px] font-bold leading-none ${type.active ? "text-primary" : "text-on-surface"}`}>
+                        <p className="mb-2 font-label-caps text-label-caps text-on-surface-variant">Report Type</p>
+                        <h4 className={`text-[22px] font-semibold leading-tight ${type.active ? "text-primary" : "text-on-surface"}`}>
                           {type.title}
                         </h4>
-                        <span className="mt-2 font-body-sm text-body-sm text-on-surface-variant">
+                        <span className="mt-3 text-body-sm text-on-surface-variant">
                           {type.description}
                         </span>
                       </label>
@@ -155,27 +157,31 @@ export default function ReportGenerationPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-                <div className="mb-6 flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-bold text-on-primary">
-                    2
-                  </span>
-                  <h3 className="font-h3-desktop text-h3-desktop">Configure Parameters</h3>
+              <div className="rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
+                <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.24em] text-primary">
+                      Step 2
+                    </span>
+                    <h3 className="mt-4 font-h3-desktop text-h3-desktop text-on-surface">Configure Parameters</h3>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                   <div className="flex flex-col gap-2">
                     <label className="font-label-caps text-label-caps text-on-surface-variant">Date Range</label>
-                    <div className="flex gap-2">
-                      <input className="flex-1 rounded-lg border border-outline-variant bg-surface p-3 font-body-sm text-body-sm" type="date" />
-                      <span className="flex items-center font-bold text-on-surface-variant">to</span>
-                      <input className="flex-1 rounded-lg border border-outline-variant bg-surface p-3 font-body-sm text-body-sm" type="date" />
+                    <div className="flex flex-col gap-2 md:flex-row">
+                      <input className="flex-1 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm" type="date" />
+                      <span className="flex items-center justify-center rounded-xl border border-outline-variant bg-white px-4 text-body-sm font-semibold text-on-surface-variant">
+                        to
+                      </span>
+                      <input className="flex-1 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm" type="date" />
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2">
                     <label className="font-label-caps text-label-caps text-on-surface-variant">Commodity Group</label>
-                    <select className="w-full rounded-lg border border-outline-variant bg-surface p-3 font-body-sm text-body-sm">
+                    <select className="w-full rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm">
                       <option>All Commodities</option>
                       <option>Basic Necessities</option>
                       <option>Prime Commodities</option>
@@ -185,12 +191,14 @@ export default function ReportGenerationPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-                <div className="mb-6 flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-bold text-on-primary">
-                    3
-                  </span>
-                  <h3 className="font-h3-desktop text-h3-desktop">Export Format</h3>
+              <div className="rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
+                <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.24em] text-primary">
+                      Step 3
+                    </span>
+                    <h3 className="mt-4 font-h3-desktop text-h3-desktop text-on-surface">Export Format</h3>
+                  </div>
                 </div>
 
                 <div className="mb-6 flex flex-wrap gap-3">
@@ -199,20 +207,20 @@ export default function ReportGenerationPage() {
                     return (
                       <button
                         key={format.label}
-                        className={`flex items-center gap-3 rounded-lg border px-6 py-3 transition-all ${
+                        className={`flex items-center gap-3 rounded-2xl border px-6 py-3 transition-all duration-200 ${
                           format.active
                             ? "border-primary bg-primary-container text-on-primary-container"
-                            : "border-outline-variant hover:border-primary hover:bg-surface-container-low"
+                            : "border-outline-variant bg-white hover:border-primary"
                         }`}
                       >
                         <Icon className={format.iconClass} size={20} />
-                        <span className="font-body-sm text-body-sm font-semibold">{format.label}</span>
+                        <span className="text-body-sm font-semibold">{format.label}</span>
                       </button>
                     );
                   })}
                 </div>
 
-                <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-4 font-bold text-on-primary transition-opacity hover:opacity-90">
+                <button className="flex w-full items-center justify-center gap-2 rounded-3xl bg-primary px-5 py-4 text-sm font-semibold text-on-primary transition hover:opacity-90">
                   <MdDownload size={18} />
                   GENERATE OFFICIAL REPORT
                 </button>
@@ -220,24 +228,29 @@ export default function ReportGenerationPage() {
             </section>
 
             <section className="flex flex-col gap-5 xl:col-span-4">
-              <div className="flex flex-col gap-4 rounded-2xl bg-surface-container-highest p-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-label-caps text-label-caps text-on-surface-variant">Recent Reports</h3>
-                  <button className="text-body-sm font-semibold text-primary hover:underline">View All</button>
+              <div className="rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-label-caps text-label-caps text-on-surface-variant">Recent Reports</p>
+                    <h3 className="font-h3-desktop text-h3-desktop text-on-surface">Available exports</h3>
+                  </div>
+                  <button className="rounded-full border border-outline-variant bg-white px-4 py-2 text-body-sm font-semibold text-primary transition hover:border-primary hover:bg-surface-container-lowest">
+                    View All
+                  </button>
                 </div>
 
-                <div className="flex flex-col gap-3">
+                <div className="space-y-4">
                   {recentReports.map((report) => {
                     const StatusIcon = report.statusIcon;
                     const ButtonIcon = report.buttonIcon;
                     return (
-                      <div key={report.name} className="flex flex-col gap-3 rounded-lg border border-outline-variant bg-surface p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-[16px] font-h3-desktop leading-tight">{report.name}</p>
-                            <p className="text-body-sm text-on-surface-variant">{report.meta}</p>
+                      <div key={report.name} className="rounded-3xl border border-outline-variant bg-white p-5">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="truncate text-lg font-semibold text-on-surface">{report.name}</p>
+                            <p className="mt-1 text-body-sm text-on-surface-variant">{report.meta}</p>
                           </div>
-                          <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-bold ${report.statusClass}`}>
+                          <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[12px] font-semibold ${report.statusClass}`}>
                             <StatusIcon size={14} />
                             {report.status}
                           </span>
@@ -245,7 +258,7 @@ export default function ReportGenerationPage() {
 
                         <button
                           disabled={report.disabled}
-                          className={`flex items-center justify-center gap-2 rounded-lg py-2 font-semibold text-body-sm transition-colors ${report.buttonClass}`}
+                          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border py-3 text-sm font-semibold transition-colors ${report.buttonClass}`}
                         >
                           <ButtonIcon size={18} />
                           {report.buttonLabel}
@@ -256,17 +269,6 @@ export default function ReportGenerationPage() {
                 </div>
               </div>
 
-              <div className="relative h-48 overflow-hidden rounded-2xl border border-outline-variant">
-                <img
-                  className="absolute inset-0 h-full w-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzBXzwP-fyXhkYjAjcOF7jaW41b839OgUynqq-x_r6nbHSqQozC_nFPTUmjyRgm64L9OV8Ogz4DInno2xWjVqcxeRzSyKWTZaJ0bLb1z_rvRtApf_sfJDMOgRUhY8PBEp9-hDhJxfX_tCyznNM9wK_VA2Yl2HbihVjn5A4hG64jxvAkFvTbDq5AQIKp3W_VBIeoj2nGJNvIGyItrrlsPgitKnSTiKdvVDp7IfI16dmJPv-mTgIQdO_hQfQOVh-JqqRXliRe0SFydE"
-                  alt="Modern analytics dashboard preview"
-                />
-                <div className="absolute inset-0 flex flex-col justify-end bg-linear-to-t from-black/80 to-transparent p-6">
-                  <p className="text-h3-desktop font-bold text-white">Need custom analytics?</p>
-                  <p className="text-body-sm text-white/80">Contact the IT department for specialized data queries.</p>
-                </div>
-              </div>
             </section>
           </div>
         </div>

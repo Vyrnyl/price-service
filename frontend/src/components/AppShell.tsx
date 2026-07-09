@@ -13,12 +13,12 @@ export default function AppShell({
   hideNavigation?: boolean;
 }) {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <TopAppBar activePath={activePath} />
       {!hideNavigation && <NavigationDrawer activePath={activePath} />}
-      {children}
+      <main className="flex-1">{children}</main>
       <FooterSection />
       <MobileBottomNav />
-    </>
+    </div>
   );
 }

@@ -104,6 +104,15 @@ body {
   font-family: "Inter", "Segoe UI", sans-serif;
 }
 
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 .font-body-sm,
 .text-body-sm {
   font-family: "Inter", "Segoe UI", sans-serif;

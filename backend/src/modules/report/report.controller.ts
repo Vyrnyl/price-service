@@ -2,11 +2,26 @@ import { Request, Response } from 'express';
 import AppError from '../../utils/AppError';
 import { reportService } from './report.service';
 import { createReportSchema, updateReportSchema, reportIdParamSchema } from './report.schema';
+import { generateReportFile } from './report.generator';
+import type { AuthUser } from '../../../types/express';
 
 export const reportController = {
   createReport: async (req: Request, res: Response) => {
+    const authUser = req.user as AuthUser | undefined;
+
+    if (!authUser) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const validatedBody = createReportSchema.parse(req.body);
-    const report = await reportService.createReport(validatedBody);
+    const generated = await generateReportFile(validatedBody);
+
+    const reportPayload = {
+      ...validatedBody,
+      fileUrl: generated.fileUrl,
+    };
+
+    const report = await reportService.createReport(reportPayload, authUser.userId);
 
     res.status(201).json({ status: 'success', data: report });
   },

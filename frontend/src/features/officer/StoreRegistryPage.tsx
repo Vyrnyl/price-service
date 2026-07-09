@@ -18,7 +18,7 @@ import { CreateStoreDialog } from "@/features/officer/components/CreateStoreDial
 import { StoreCard } from "@/features/officer/components/StoreCard";
 
 
-export default function StoreRegistryPage({ showAssignedOfficer = true }: StoreRegistryPageProps) {
+export default function StoreRegistryPage({ showAssignedOfficer = true, canCreateStore = true }: StoreRegistryPageProps) {
   const [stores, setStores] = useState<Store[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,13 +118,15 @@ export default function StoreRegistryPage({ showAssignedOfficer = true }: StoreR
                 Manage and monitor registered retail outlets across Catanduanes.
               </p>
             </div>
-            <button type="button" onClick={() => setFormOpen((current) => !current)} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
-              <MdAddBusiness size={18} />
-              <span>{formOpen ? "Close Add Outlet" : "Add New Outlet"}</span>
-            </button>
+            {canCreateStore && (
+              <button type="button" onClick={() => setFormOpen((current) => !current)} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
+                <MdAddBusiness size={18} />
+                <span>{formOpen ? "Close Add Outlet" : "Add New Outlet"}</span>
+              </button>
+            )}
           </div>
 
-          {formOpen && (
+          {canCreateStore && formOpen && (
             <CreateStoreDialog
               formData={formData}
               formErrors={formErrors}

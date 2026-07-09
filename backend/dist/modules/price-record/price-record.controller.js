@@ -9,8 +9,16 @@ const price_record_service_1 = require("./price-record.service");
 const price_record_schema_1 = require("./price-record.schema");
 exports.priceRecordController = {
     createPriceRecord: async (req, res) => {
+        const authUser = req.user;
+        if (!authUser) {
+            throw new AppError_1.default('Unauthorized', 401);
+        }
         const validatedBody = price_record_schema_1.createPriceRecordSchema.parse(req.body);
-        const priceRecord = await price_record_service_1.priceRecordService.createPriceRecord(validatedBody);
+        const payload = {
+            ...validatedBody,
+            userId: authUser.userId,
+        };
+        const priceRecord = await price_record_service_1.priceRecordService.createPriceRecord(payload);
         res.status(201).json({ status: 'success', data: priceRecord });
     },
     getPriceRecords: async (_req, res) => {

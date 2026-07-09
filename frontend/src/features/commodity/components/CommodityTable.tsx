@@ -26,8 +26,8 @@ type CommodityTableProps = {
   onSearchTermChange: (value: string) => void;
   onStatusFilterChange: (value: "ALL" | "Active" | "Inactive") => void;
   onPageChange: (page: number) => void;
-  onOpenUpdateSrp: (commodityId: string) => void;
-  onEditCommodity: (commodity: Pick<CommodityItem, "id" | "name" | "category" | "status">) => void;
+  onOpenUpdateSrp?: (commodityId: string) => void;
+  onEditCommodity?: (commodity: Pick<CommodityItem, "id" | "name" | "category" | "status">) => void;
 };
 
 export default function CommodityTable({
@@ -43,6 +43,8 @@ export default function CommodityTable({
   onOpenUpdateSrp,
   onEditCommodity,
 }: CommodityTableProps) {
+  const showActions = Boolean(onOpenUpdateSrp || onEditCommodity);
+  const columnCount = showActions ? 5 : 4;
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const filteredCommodityRows = commodityRows.filter((row) => {
     const normalizedRow = `${row.name} ${row.category} ${row.status}`.toLowerCase();
@@ -114,7 +116,9 @@ export default function CommodityTable({
               <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Category</th>
               <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Status</th>
               <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">SRP (PHP)</th>
-              <th className="pb-4 text-right text-[10px] font-semibold uppercase tracking-wide text-outline">Actions</th>
+              {showActions ? (
+                <th className="pb-4 text-right text-[10px] font-semibold uppercase tracking-wide text-outline">Actions</th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20">
@@ -161,30 +165,34 @@ export default function CommodityTable({
                     <td className="py-4 text-sm font-semibold text-primary">{item.srp}</td>
                     <td className="py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          className="rounded-lg border border-outline-variant bg-surface px-3 py-2 text-xs font-semibold text-on-surface transition hover:border-primary hover:text-primary"
-                          type="button"
-                          title="Update SRP"
-                          onClick={() => onOpenUpdateSrp(item.id)}
-                        >
-                          Update SRP
-                        </button>
-                        <button
-                          className="rounded-lg p-2 text-on-surface-variant transition-colors hover:text-primary"
-                          type="button"
-                          title="Edit commodity"
-                          onClick={() =>
-                            onEditCommodity({
-                              id: item.id,
-                              name: item.name,
-                              category: item.category,
-                              status: item.status,
-                            })
-                          }
-                        >
-                          <span className="sr-only">Edit commodity</span>
-                          <MdEdit size={18} />
-                        </button>
+                        {onOpenUpdateSrp ? (
+                          <button
+                            className="rounded-lg border border-outline-variant bg-surface px-3 py-2 text-xs font-semibold text-on-surface transition hover:border-primary hover:text-primary"
+                            type="button"
+                            title="Update SRP"
+                            onClick={() => onOpenUpdateSrp(item.id)}
+                          >
+                            Update SRP
+                          </button>
+                        ) : null}
+                        {onEditCommodity ? (
+                          <button
+                            className="rounded-lg p-2 text-on-surface-variant transition-colors hover:text-primary"
+                            type="button"
+                            title="Edit commodity"
+                            onClick={() =>
+                              onEditCommodity({
+                                id: item.id,
+                                name: item.name,
+                                category: item.category,
+                                status: item.status,
+                              })
+                            }
+                          >
+                            <span className="sr-only">Edit commodity</span>
+                            <MdEdit size={18} />
+                          </button>
+                        ) : null}
                       </div>
                     </td>
                   </tr>

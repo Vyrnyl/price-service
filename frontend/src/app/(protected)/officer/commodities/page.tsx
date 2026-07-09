@@ -4,7 +4,7 @@ import CommodityManagementPage from "@/features/commodity/CommodityManagementPag
 export default function OfficerCommoditiesRoute() {
   return (
     <AppShell activePath="/officer/commodities">
-      <CommodityManagementPage />
+      <CommodityManagementPage userRole="officer" />
     </AppShell>
   );
 }

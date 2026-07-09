@@ -50,8 +50,8 @@ function mapBackendPriceRecord(record: any): PriceRecord {
     record.status === "COMPLIANT"
       ? "Compliant"
       : record.status === "OVERPRICE"
-      ? "Above SRP"
-      : "Below SRP";
+        ? "Above SRP"
+        : "Below SRP";
 
   return {
     id: record.id,
@@ -71,7 +71,11 @@ function mapBackendPriceRecord(record: any): PriceRecord {
   };
 }
 
-export default function PriceRecordsPage() {
+export default function PriceRecordsPage({
+  canCreateRecord = true,
+}: {
+  canCreateRecord?: boolean;
+}) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
@@ -81,7 +85,9 @@ export default function PriceRecordsPage() {
   const [records, setRecords] = useState<PriceRecord[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof CreatePriceRecordPayload, string>>>({});
+  const [formErrors, setFormErrors] = useState<
+    Partial<Record<keyof CreatePriceRecordPayload, string>>
+  >({});
   const [submitLoading, setSubmitLoading] = useState(false);
   const [newRecord, setNewRecord] = useState<CreatePriceRecordPayload>({
     commodityId: "",
@@ -94,11 +100,14 @@ export default function PriceRecordsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [storeResponse, commodityResponse, recordResponse] = await Promise.all([
-          apiFetch<{ status: string; data: StoreOption[] }>("/api/stores"),
-          apiFetch<{ status: string; data: CommodityOption[] }>("/api/commodities"),
-          apiFetch<{ status: string; data: any[] }>("/api/price-records"),
-        ]);
+        const [storeResponse, commodityResponse, recordResponse] =
+          await Promise.all([
+            apiFetch<{ status: string; data: StoreOption[] }>("/api/stores"),
+            apiFetch<{ status: string; data: CommodityOption[] }>(
+              "/api/commodities",
+            ),
+            apiFetch<{ status: string; data: any[] }>("/api/price-records"),
+          ]);
 
         setStores(storeResponse.data);
         setCommodities(commodityResponse.data);
@@ -127,13 +136,17 @@ export default function PriceRecordsPage() {
         record.officerName.toLowerCase().includes(query);
 
       const matchesStore = storeFilter === "" || record.storeId === storeFilter;
-      const matchesCommodity = commodityFilter === "" || record.commodityId === commodityFilter;
+      const matchesCommodity =
+        commodityFilter === "" || record.commodityId === commodityFilter;
 
       return matchesFilter && matchesSearch && matchesStore && matchesCommodity;
     });
   }, [activeFilter, commodityFilter, records, searchQuery, storeFilter]);
 
-  const handleFieldChange = (field: keyof CreatePriceRecordPayload, value: string | number) => {
+  const handleFieldChange = (
+    field: keyof CreatePriceRecordPayload,
+    value: string | number,
+  ) => {
     setNewRecord((current) => ({ ...current, [field]: value }));
     if (formErrors[field]) {
       setFormErrors((current) => ({ ...current, [field]: undefined }));
@@ -144,7 +157,8 @@ export default function PriceRecordsPage() {
     event.preventDefault();
     setFormError(null);
 
-    const nextErrors: Partial<Record<keyof CreatePriceRecordPayload, string>> = {};
+    const nextErrors: Partial<Record<keyof CreatePriceRecordPayload, string>> =
+      {};
 
     if (!newRecord.storeId) {
       nextErrors.storeId = "Please select a store.";
@@ -166,15 +180,21 @@ export default function PriceRecordsPage() {
 
     try {
       setSubmitLoading(true);
-      const response = await apiFetch<{ status: string; data: any }>("/api/price-records", {
-        method: "POST",
-        body: {
-          ...newRecord,
-          dateAndTime: new Date(newRecord.dateAndTime).toISOString(),
+      const response = await apiFetch<{ status: string; data: any }>(
+        "/api/price-records",
+        {
+          method: "POST",
+          body: {
+            ...newRecord,
+            dateAndTime: new Date(newRecord.dateAndTime).toISOString(),
+          },
         },
-      });
+      );
 
-      setRecords((current) => [mapBackendPriceRecord(response.data), ...current]);
+      setRecords((current) => [
+        mapBackendPriceRecord(response.data),
+        ...current,
+      ]);
       setFormOpen(false);
       setNewRecord({
         commodityId: "",
@@ -185,7 +205,9 @@ export default function PriceRecordsPage() {
       });
       setFormErrors({});
     } catch (error: unknown) {
-      setFormError(error instanceof Error ? error.message : "Unable to save price record.");
+      setFormError(
+        error instanceof Error ? error.message : "Unable to save price record.",
+      );
     } finally {
       setSubmitLoading(false);
     }
@@ -205,20 +227,23 @@ export default function PriceRecordsPage() {
                   Price Records
                 </h1>
                 <p className="mt-1 text-body-sm text-on-surface-variant">
-                  Showing {records.length} validated entries in the last 30 days.
+                  Showing {records.length} validated entries in the last 30
+                  days.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormError(null);
-                  setFormOpen((current) => !current);
-                }}
-                className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md"
-              >
-                <MdAdd size={20} />
-                New Entry
-              </button>
+              {canCreateRecord ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormError(null);
+                    setFormOpen((current) => !current);
+                  }}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md"
+                >
+                  <MdAdd size={20} />
+                  New Entry
+                </button>
+              ) : null}
             </div>
           </header>
 
@@ -250,8 +275,6 @@ export default function PriceRecordsPage() {
               />
             </div>
           ) : null}
-
-          <PriceRecordsTable records={filteredRecords} />
 
           <PriceRecordsTable records={filteredRecords} />
         </div>
