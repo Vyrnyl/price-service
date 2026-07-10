@@ -9,6 +9,7 @@ export function CreateStoreDialog({
   formError,
   formSuccess,
   submitLoading,
+  mode = "create",
   onClose,
   onChange,
   onSubmit,
@@ -18,17 +19,23 @@ export function CreateStoreDialog({
   formError: string | null;
   formSuccess: string | null;
   submitLoading: boolean;
+  mode?: "create" | "edit";
   onClose: () => void;
   onChange: (field: keyof StoreFormData, value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
+  const isEditMode = mode === "edit";
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
       <div className="w-full max-w-xl rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-h3-desktop font-semibold text-on-surface">Add New Outlet</h2>
-            <p className="mt-2 text-body-sm text-on-surface-variant">Register a new store with your officer account.</p>
+            <h2 className="text-h3-desktop font-semibold text-on-surface">
+              {isEditMode ? "Edit Outlet" : "Add New Outlet"}
+            </h2>
+            <p className="mt-2 text-body-sm text-on-surface-variant">
+              {isEditMode ? "Update the selected outlet details below." : "Register a new store with your officer account."}
+            </p>
           </div>
           <button type="button" onClick={onClose} className="inline-flex rounded-full bg-surface px-3 py-2 text-on-surface transition hover:bg-surface-container-high">
             Close
@@ -85,7 +92,7 @@ export function CreateStoreDialog({
 
           <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:justify-end">
             <button type="submit" disabled={submitLoading} className={PRIMARY_BUTTON_CLASSES}>
-              {submitLoading ? "Creating..." : "Create Store"}
+              {submitLoading ? (isEditMode ? "Updating..." : "Creating...") : isEditMode ? "Update Store" : "Create Store"}
             </button>
           </div>
 

@@ -1,7 +1,11 @@
+import { MdOutlineEdit } from "react-icons/md";
 import type { PriceRecord } from "@/features/officer/price-records.types";
 
 interface PriceRecordsTableProps {
   records: PriceRecord[];
+  onEdit?: (record: PriceRecord) => void;
+  hideActions?: boolean;
+  hideOfficerColumn?: boolean;
 }
 
 function getStatusClasses(status: string) {
@@ -16,7 +20,12 @@ function getStatusClasses(status: string) {
   return "rounded-full bg-surface-container-highest text-on-surface-variant px-3 py-1 text-[12px] font-semibold";
 }
 
-export default function PriceRecordsTable({ records, onView }: PriceRecordsTableProps) {
+export default function PriceRecordsTable({
+  records,
+  onEdit,
+  hideActions = false,
+  hideOfficerColumn = false,
+}: PriceRecordsTableProps) {
   return (
     <div className="rounded-3xl border border-outline-variant bg-white p-5 data-card-shadow md:p-6">
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -39,7 +48,12 @@ export default function PriceRecordsTable({ records, onView }: PriceRecordsTable
               <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Store & Location</th>
               <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Commodity</th>
               <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Price & Status</th>
-              <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Officer</th>
+              {!hideOfficerColumn ? (
+                <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Officer</th>
+              ) : null}
+              {!hideActions ? (
+                <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Action</th>
+              ) : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20">
@@ -66,14 +80,28 @@ export default function PriceRecordsTable({ records, onView }: PriceRecordsTable
                     ) : null}
                   </div>
                 </td>
-                <td className="py-3 align-top">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-fixed text-primary font-semibold text-sm">
-                      {record.officerInitials}
+                {!hideOfficerColumn ? (
+                  <td className="py-3 align-top">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-fixed text-primary font-semibold text-sm">
+                        {record.officerInitials}
+                      </div>
+                      <span className="text-body-xs text-on-surface">{record.officerName}</span>
                     </div>
-                    <span className="text-body-xs text-on-surface">{record.officerName}</span>
-                  </div>
-                </td>
+                  </td>
+                ) : null}
+                {!hideActions ? (
+                  <td className="py-3 align-top">
+                    <button
+                      type="button"
+                      onClick={() => onEdit?.(record)}
+                      className="inline-flex items-center justify-center rounded-full border border-outline-variant bg-surface p-2 text-on-surface transition hover:bg-surface-container-high"
+                      aria-label="Edit price record"
+                    >
+                      <MdOutlineEdit size={16} />
+                    </button>
+                  </td>
+                ) : null}
               </tr>
             ))}
           </tbody>

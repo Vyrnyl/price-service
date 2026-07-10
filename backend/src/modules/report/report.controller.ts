@@ -62,4 +62,10 @@ export const reportController = {
 
     res.status(204).send();
   },
+
+  deleteAllReports: async (_req: Request, res: Response) => {
+    await reportService.deleteAllReports();
+
+    res.status(204).send();
+  },
 };

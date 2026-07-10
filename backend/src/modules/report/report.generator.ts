@@ -12,6 +12,7 @@ export type ReportGeneratorPayload = {
   period: string;
   format: ReportFormat;
   commodityGroup?: string;
+  storeId?: string;
 };
 
 const REPORTS_DIR = path.resolve(process.cwd(), 'reports');
@@ -40,19 +41,11 @@ function mapCommodityGroupFilter(group?: string): Prisma.PriceRecordWhereInput |
     return undefined;
   }
 
-  const mapping: Record<string, string> = {
-    BASIC: 'Basic Necessities',
-    PRIME: 'Prime Commodities',
-    CONSTRUCTION: 'Construction Materials',
-  };
-
-  const category = mapping[group] ?? group;
-
   return {
     commodity: {
       is: {
         category: {
-          contains: category,
+          equals: group,
           mode: 'insensitive',
         },
       },
@@ -60,7 +53,15 @@ function mapCommodityGroupFilter(group?: string): Prisma.PriceRecordWhereInput |
   } as Prisma.PriceRecordWhereInput;
 }
 
-async function loadReportRecords(period: string, commodityGroup?: string) {
+function mapStoreFilter(storeId?: string): Prisma.PriceRecordWhereInput | undefined {
+  if (!storeId) {
+    return undefined;
+  }
+
+  return { storeId } as Prisma.PriceRecordWhereInput;
+}
+
+async function loadReportRecords(period: string, commodityGroup?: string, storeId?: string) {
   const { startDate, endDate } = parsePeriod(period);
 
   return prisma.priceRecord.findMany({
@@ -70,6 +71,7 @@ async function loadReportRecords(period: string, commodityGroup?: string) {
         lte: endDate,
       },
       ...mapCommodityGroupFilter(commodityGroup),
+      ...mapStoreFilter(storeId),
     },
     include: {
       commodity: true,
@@ -177,7 +179,7 @@ export async function generateReportFile(payload: ReportGeneratorPayload) {
 
   const filename = buildReportFilename(payload.type, payload.format);
   const reportPath = path.join(REPORTS_DIR, filename);
-  const records = await loadReportRecords(payload.period, payload.commodityGroup);
+  const records = await loadReportRecords(payload.period, payload.commodityGroup, payload.storeId);
 
   if (payload.format === 'PDF') {
     await generatePdf(reportPath, payload, records);

@@ -7,4 +7,5 @@ export const reportService = {
   getReportById: (id: string) => reportRepository.findById(id),
   updateReport: (id: string, data: UpdateReportInput) => reportRepository.update(id, data),
   deleteReport: (id: string) => reportRepository.delete(id),
+  deleteAllReports: () => reportRepository.deleteAll(),
 };

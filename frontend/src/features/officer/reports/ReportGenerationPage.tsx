@@ -2,18 +2,27 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MdDownload } from "react-icons/md";
+import { apiFetch } from "@/lib/api";
 import { reportTypes, exportFormats } from "./data";
 import ExportFormatButton from "./components/ExportFormatButton";
 import RecentReportCard from "./components/RecentReportCard";
 import ReportTypeCard from "./components/ReportTypeCard";
-import { createReport, getReports } from "./api";
+import { createReport, deleteAllReports, getReports } from "./api";
 import type { BackendReport, CreateReportPayload, RecentReport } from "./types";
 
-const COMMODITY_GROUPS = [
-  { value: "ALL", label: "All Commodities" },
-  { value: "BASIC", label: "Basic Necessities" },
-  { value: "PRIME", label: "Prime Commodities" },
-  { value: "CONSTRUCTION", label: "Construction Materials" },
+type StoreOption = {
+  id: string;
+  name: string;
+  location: string;
+};
+
+type CategoryOption = {
+  value: string;
+  label: string;
+};
+
+const DEFAULT_CATEGORIES: CategoryOption[] = [
+  { value: "ALL", label: "All Categories" },
 ];
 
 function mapBackendReportToRecent(report: BackendReport): RecentReport {
@@ -40,24 +49,31 @@ function mapBackendReportToRecent(report: BackendReport): RecentReport {
 }
 
 export default function ReportGenerationPage() {
-  const defaultTypeId = reportTypes.find((type) => type.id === "daily-compliance")?.id ?? reportTypes[0].id;
+  const visibleReportTypes = reportTypes.filter((type) => type.id !== "daily-compliance");
+  const defaultTypeId = visibleReportTypes[0]?.id ?? reportTypes[0].id;
   const defaultFormatLabel = exportFormats.find((format) => format.label === "Excel Spreadsheet")?.label ?? exportFormats[0].label;
 
   const [selectedReportTypeId, setSelectedReportTypeId] = useState(defaultTypeId);
   const [selectedExportFormat, setSelectedExportFormat] = useState(defaultFormatLabel);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [commodityGroup, setCommodityGroup] = useState(COMMODITY_GROUPS[0].value);
+  const [categories, setCategories] = useState<CategoryOption[]>(DEFAULT_CATEGORIES);
+  const [commodityGroup, setCommodityGroup] = useState(DEFAULT_CATEGORIES[0].value);
+  const [stores, setStores] = useState<StoreOption[]>([]);
+  const [storesLoading, setStoresLoading] = useState(false);
+  const [selectedStoreId, setSelectedStoreId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [recentReports, setRecentReports] = useState<RecentReport[]>([]);
 
   const selectedReportType = reportTypes.find((type) => type.id === selectedReportTypeId) ?? reportTypes[0];
+  const isStoreMonitoring = selectedReportType.id === "store-monitoring";
+  const isDailyCompliance = selectedReportType.id === "daily-compliance";
 
   const selectedFormat = exportFormats.find((format) => format.label === selectedExportFormat) ?? exportFormats[0];
 
-  const isGenerateDisabled = !startDate || !endDate;
+  const isGenerateDisabled = (!isDailyCompliance && (!startDate || !endDate)) || (isStoreMonitoring && !selectedStoreId);
 
   const period = useMemo(() => {
     if (!startDate || !endDate) {
@@ -80,6 +96,60 @@ export default function ReportGenerationPage() {
     void loadReports();
   }, []);
 
+  useEffect(() => {
+    const loadStores = async () => {
+      try {
+        setStoresLoading(true);
+        const response = await apiFetch<{ status: string; data: StoreOption[] }>("/api/stores");
+        setStores(response.data);
+      } catch (err) {
+        console.error("Unable to load stores", err);
+      } finally {
+        setStoresLoading(false);
+      }
+    };
+
+    void loadStores();
+  }, []);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await apiFetch<{ status: string; data: Array<{ category: string }> }>(
+          "/api/commodities",
+        );
+        const unique = Array.from(new Set(response.data.map((item) => item.category))).sort();
+        setCategories([
+          DEFAULT_CATEGORIES[0],
+          ...unique.map((category) => ({ value: category, label: category })),
+        ]);
+      } catch (err) {
+        console.error("Unable to load commodity categories", err);
+      }
+    };
+
+    void loadCategories();
+  }, []);
+
+  useEffect(() => {
+    if (!isStoreMonitoring) {
+      setSelectedStoreId("");
+    }
+  }, [isStoreMonitoring]);
+
+  useEffect(() => {
+    if (isDailyCompliance) {
+      const today = new Date();
+      const formatted = today.toISOString().slice(0, 10);
+      setStartDate(formatted);
+      setEndDate(formatted);
+      return;
+    }
+
+    setStartDate("");
+    setEndDate("");
+  }, [isDailyCompliance]);
+
   const handleGenerateReport = async () => {
     setError(null);
     setSuccessMessage(null);
@@ -96,6 +166,7 @@ export default function ReportGenerationPage() {
       period,
       format,
       commodityGroup: commodityGroup === "ALL" ? undefined : commodityGroup,
+      ...(isStoreMonitoring && selectedStoreId ? { storeId: selectedStoreId } : {}),
     };
 
     try {
@@ -135,8 +206,8 @@ export default function ReportGenerationPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  {reportTypes.map((type) => (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {visibleReportTypes.map((type) => (
                     <ReportTypeCard
                       key={type.id}
                       type={type}
@@ -158,41 +229,62 @@ export default function ReportGenerationPage() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                  <div className="flex flex-col gap-2 min-w-0">
-                    <label className="font-label-caps text-label-caps text-on-surface-variant">Date Range</label>
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center">
-                      <input
-                        className="flex-1 min-w-0 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
-                        type="date"
-                        value={startDate}
-                        onChange={(event) => setStartDate(event.target.value)}
-                      />
-                      <span className="flex items-center justify-center rounded-xl border border-outline-variant bg-white px-4 text-body-sm font-semibold text-on-surface-variant">
-                        to
-                      </span>
-                      <input
-                        className="flex-1 min-w-0 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
-                        type="date"
-                        value={endDate}
-                        onChange={(event) => setEndDate(event.target.value)}
-                      />
+                  {!isDailyCompliance ? (
+                    <div className="flex flex-col gap-2 min-w-0">
+                      <label className="font-label-caps text-label-caps text-on-surface-variant">Date Range</label>
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                        <input
+                          className="flex-1 min-w-0 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
+                          type="date"
+                          value={startDate}
+                          onChange={(event) => setStartDate(event.target.value)}
+                        />
+                        <span className="flex items-center justify-center rounded-xl border border-outline-variant bg-white px-4 text-body-sm font-semibold text-on-surface-variant">
+                          to
+                        </span>
+                        <input
+                          className="flex-1 min-w-0 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
+                          type="date"
+                          value={endDate}
+                          onChange={(event) => setEndDate(event.target.value)}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : null}
 
-                  <div className="flex flex-col gap-2 min-w-0">
-                    <label className="font-label-caps text-label-caps text-on-surface-variant">Commodity Group</label>
-                    <select
-                      className="w-full rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
-                      value={commodityGroup}
-                      onChange={(event) => setCommodityGroup(event.target.value)}
-                    >
-                      {COMMODITY_GROUPS.map((group) => (
-                        <option key={group.value} value={group.value}>
-                          {group.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  {isStoreMonitoring ? (
+                    <div className="flex flex-col gap-2 min-w-0">
+                      <label className="font-label-caps text-label-caps text-on-surface-variant">Store</label>
+                      <select
+                        className="w-full rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
+                        value={selectedStoreId}
+                        onChange={(event) => setSelectedStoreId(event.target.value)}
+                        disabled={storesLoading}
+                      >
+                        <option value="">{storesLoading ? "Loading stores..." : "Select a store"}</option>
+                        {stores.map((store) => (
+                          <option key={store.id} value={store.id}>
+                            {store.name} • {store.location}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 min-w-0">
+                      <label className="font-label-caps text-label-caps text-on-surface-variant">Category list</label>
+                      <select
+                        className="w-full rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
+                        value={commodityGroup}
+                        onChange={(event) => setCommodityGroup(event.target.value)}
+                      >
+                        {categories.map((category) => (
+                          <option key={category.value} value={category.value}>
+                            {category.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -231,21 +323,27 @@ export default function ReportGenerationPage() {
                   <button
                     type="button"
                     className="rounded-full border border-outline-variant bg-white px-4 py-2 text-body-sm font-semibold text-primary transition hover:border-primary hover:bg-surface-container-lowest"
-                    onClick={() => {
-                      setStartDate("");
-                      setEndDate("");
-                      setSelectedReportTypeId(defaultTypeId);
-                      setSelectedExportFormat(defaultFormatLabel);
-                      setCommodityGroup(COMMODITY_GROUPS[0].value);
-                      setError(null);
-                      setSuccessMessage(null);
+                    onClick={async () => {
+                      try {
+                        await deleteAllReports();
+                        setRecentReports([]);
+                        setStartDate("");
+                        setEndDate("");
+                        setSelectedReportTypeId(defaultTypeId);
+                        setSelectedExportFormat(defaultFormatLabel);
+                        setCommodityGroup(DEFAULT_CATEGORIES[0].value);
+                        setError(null);
+                        setSuccessMessage("All recent reports have been cleared.");
+                      } catch (err: unknown) {
+                        setError(err instanceof Error ? err.message : "Unable to clear recent reports.");
+                      }
                     }}
                   >
                     Reset
                   </button>
                 </div>
 
-                <div className="max-h-[520px] space-y-4 overflow-y-auto pr-1 scrollbar-none">
+                <div className="max-h-130 space-y-4 overflow-y-auto pr-1 scrollbar-none">
                   {displayReports.map((report) => (
                     <RecentReportCard
                       key={report.id}

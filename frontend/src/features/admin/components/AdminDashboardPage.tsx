@@ -6,11 +6,7 @@ import {
   MdOutlineInventory2,
   MdOutlineTrendingUp,
   MdOutlineStorefront,
-  MdOutlineSell,
-  MdOutlineLogin,
-  MdOutlineReportProblem,
   MdOutlinePersonAdd,
-  MdOutlineCheckCircle,
 } from "react-icons/md";
 import { FiUsers } from "react-icons/fi";
 import { IoFilterOutline } from "react-icons/io5";
@@ -26,6 +22,23 @@ type DashboardStat = {
   iconColor: string;
   valueColor?: string;
   metaStyle?: string;
+};
+
+type ActivityItem = {
+  title: string;
+  description: string;
+  time: string;
+  icon: ComponentType<{ className?: string; size?: number }>;
+  iconStyle: string;
+  change?: string;
+};
+
+type StoreComplianceRow = {
+  id: string;
+  name: string;
+  location: string;
+  priceRecordCount: number;
+  lastUpdated: string;
 };
 
 const initialStats: DashboardStat[] = [
@@ -63,96 +76,45 @@ const initialStats: DashboardStat[] = [
   },
 ];
 
-const activityItems = [
-  {
-    icon: MdOutlineSell,
-    iconStyle: "bg-secondary-container text-on-secondary-container",
-    title: "Rice (Regular Milled)",
-    description: "price updated at SM Market, Manila.",
-    time: "Just Now",
-    change: "₱42.00 → ₱43.50",
-  },
-  {
-    icon: MdOutlineLogin,
-    iconStyle: "bg-surface-container-highest text-on-surface-variant",
-    title: "Inspector Maria S.",
-    description: "logged in from QC Field Office.",
-    time: "15 Minutes Ago",
-  },
-  {
-    icon: MdOutlineReportProblem,
-    iconStyle: "bg-error-container/20 text-error",
-    title: "SRP Violation",
-    description: "flagged: Store #042 - Onion (Red).",
-    time: "1 Hour Ago",
-  },
-  {
-    icon: MdOutlinePersonAdd,
-    iconStyle: "bg-primary-container/10 text-primary",
-    title: "2 New Retailers",
-    description: "approved for price submission.",
-    time: "2 Hours Ago",
-  },
-];
+function formatRelativeTime(value: string) {
+  const date = new Date(value);
 
-const watchlistRows = [
-  {
-    initials: "R",
-    commodity: "Rice (Regular Milled)",
-    currentAvg: "₱43.20",
-    srp: "₱41.00",
-    trend: "+5.3%",
-    trendColor: "text-error",
-    trendIcon: MdOutlineTrendingUp,
-    status: "Violation",
-    statusStyle: "bg-error text-on-error",
-  },
-  {
-    initials: "S",
-    commodity: "Sugar (Refined)",
-    currentAvg: "₱92.50",
-    srp: "₱100.00",
-    trend: "-1.2%",
-    trendColor: "text-primary",
-    trendIcon: MdOutlineTrendingUp,
-    status: "Compliant",
-    statusStyle: "border border-outline text-outline",
-  },
-  {
-    initials: "O",
-    commodity: "Onion (Red)",
-    currentAvg: "₱180.00",
-    srp: "₱170.00",
-    trend: "+12.4%",
-    trendColor: "text-error",
-    trendIcon: MdOutlineTrendingUp,
-    status: "Violation",
-    statusStyle: "bg-error text-on-error",
-  },
-  {
-    initials: "C",
-    commodity: "Cooking Oil",
-    currentAvg: "₱65.00",
-    srp: "₱65.00",
-    trend: "Stable",
-    trendColor: "text-on-surface-variant",
-    trendIcon: MdOutlineTrendingUp,
-    status: "Compliant",
-    statusStyle: "border border-outline text-outline",
-  },
-];
+  if (Number.isNaN(date.getTime())) {
+    return "Recently updated";
+  }
+
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+
+  if (diffMinutes < 1) {
+    return "Just now";
+  }
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} min ago`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours} hr ago`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+}
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStat[]>(initialStats);
+  const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
+  const [storeComplianceRows, setStoreComplianceRows] = useState<StoreComplianceRow[]>([]);
 
   useEffect(() => {
     async function loadDashboardStats() {
       try {
-        const [commodityResponse, storeResponse, userResponse, priceRecordResponse] = await Promise.all([
-          apiFetch<{ status: string; data: unknown[] }>("/api/commodities"),
-          apiFetch<{ status: string; data: unknown[] }>("/api/stores"),
-          apiFetch<unknown[]>("/api/users"),
-          apiFetch<unknown[]>("/api/price-records"),
+        const [commodityResponse, storeResponse, userResponse] = await Promise.all([
+          apiFetch<{ status: string; data: unknown[] }>('/api/commodities'),
+          apiFetch<{ status: string; data: unknown[] }>('/api/stores'),
+          apiFetch<unknown[]>('/api/users'),
         ]);
 
         const totalCommodities = String(commodityResponse.data.length);
@@ -200,6 +162,112 @@ export default function AdminDashboardPage() {
     }
 
     loadDashboardStats();
+  }, []);
+
+  useEffect(() => {
+    async function loadActivityFeed() {
+      try {
+        const [usersResponse, commoditiesResponse, srpsResponse] = await Promise.all([
+          apiFetch<Array<{ id: string; name: string; createdAt?: string }>>("/api/users"),
+          apiFetch<{ status: string; data: Array<{ id: string; name: string; createdAt?: string }> }>("/api/commodities"),
+          apiFetch<{ status: string; data: Array<{ id: string; price?: number | string; effectiveDate?: string; createdAt?: string; commodity?: { name?: string } }> }>("/api/srps"),
+        ]);
+
+        const latestUser = [...usersResponse]
+          .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0] ?? null;
+        const latestCommodity = [...commoditiesResponse.data]
+          .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0] ?? null;
+        const latestSrp = [...srpsResponse.data]
+          .sort((a, b) => new Date(b.effectiveDate ?? b.createdAt ?? 0).getTime() - new Date(a.effectiveDate ?? a.createdAt ?? 0).getTime())[0] ?? null;
+
+        const nextItems: ActivityItem[] = [];
+
+        if (latestUser) {
+          nextItems.push({
+            icon: MdOutlinePersonAdd,
+            iconStyle: "bg-primary-container/10 text-primary",
+            title: "New user added",
+            description: `${latestUser.name} joined as a ${latestUser.id ? "new account" : "user"}`,
+            time: formatRelativeTime(latestUser.createdAt ?? new Date().toISOString()),
+          });
+        }
+
+        if (latestCommodity) {
+          nextItems.push({
+            icon: MdOutlineInventory2,
+            iconStyle: "bg-secondary-container text-on-secondary-container",
+            title: "Commodity added",
+            description: `${latestCommodity.name} was added to the system`,
+            time: formatRelativeTime(latestCommodity.createdAt ?? new Date().toISOString()),
+          });
+        }
+
+        if (latestSrp) {
+          nextItems.push({
+            icon: MdOutlineTrendingUp,
+            iconStyle: "bg-tertiary-container/10 text-tertiary",
+            title: "SRP updated",
+            description: `${latestSrp.commodity?.name ?? "Commodity"} now has an SRP of ₱${Number(latestSrp.price ?? 0).toFixed(2)}`,
+            time: formatRelativeTime(latestSrp.effectiveDate ?? latestSrp.createdAt ?? new Date().toISOString()),
+            change: `₱${Number(latestSrp.price ?? 0).toFixed(2)}`,
+          });
+        }
+
+        setActivityItems(nextItems);
+      } catch (error) {
+        console.error("Failed to load activity feed", error);
+      }
+    }
+
+    loadActivityFeed();
+  }, []);
+
+  useEffect(() => {
+    async function loadStoreComplianceData() {
+      try {
+        const [storesResponse, priceRecordsResponse] = await Promise.all([
+          apiFetch<{ status: string; data: Array<{ id: string; name: string; location?: string; createdAt?: string }> }>('/api/stores'),
+          apiFetch<{ status: string; data: Array<{ id: string; storeId?: string; store?: { name?: string }; price?: number | string; dateAndTime?: string; createdAt?: string; status?: string }> }>('/api/price-records'),
+        ]);
+
+        const recordsByStore = new Map<string, Array<{ createdAt?: string; dateAndTime?: string; price?: number | string; status?: string }>>();
+
+        for (const record of priceRecordsResponse.data) {
+          const storeId = record.storeId ?? '';
+          if (!recordsByStore.has(storeId)) {
+            recordsByStore.set(storeId, []);
+          }
+          recordsByStore.get(storeId)?.push(record);
+        }
+
+        const rows = storesResponse.data
+          .map((store) => {
+            const records = recordsByStore.get(store.id) ?? [];
+            const latestRecord = [...records].sort((a, b) => {
+              const aTime = new Date(a.dateAndTime ?? a.createdAt ?? 0).getTime();
+              const bTime = new Date(b.dateAndTime ?? b.createdAt ?? 0).getTime();
+              return bTime - aTime;
+            })[0];
+
+            const lastUpdated = latestRecord?.dateAndTime || latestRecord?.createdAt || store.createdAt || '';
+
+            return {
+              id: store.id,
+              name: store.name,
+              location: store.location ?? '—',
+              priceRecordCount: records.length,
+              lastUpdated,
+            };
+          })
+          .sort((a, b) => b.priceRecordCount - a.priceRecordCount || a.name.localeCompare(b.name));
+
+        setStoreComplianceRows(rows);
+      } catch (error) {
+        console.error('Failed to load store compliance data', error);
+      }
+    }
+
+    loadStoreComplianceData();
   }, []);
 
   return (
@@ -255,79 +323,8 @@ export default function AdminDashboardPage() {
             ))}
           </section>
 
-          <section className="flex flex-col gap-6 xl:flex-row">
-            <div className="flex min-h-105 flex-1 flex-col rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
-              <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-                <div>
-                  <h4 className="font-h3-desktop text-h3-desktop text-on-surface">
-                    Price Trend Analytics
-                  </h4>
-                  <p className="text-body-sm text-on-surface-variant">
-                    Market Average vs. SRP over 30 days
-                  </p>
-                </div>
-                <div className="flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-low p-1">
-                  {['30 Days', '90 Days', '1 Year'].map((item, index) => (
-                    <button
-                      key={item}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                        index === 0
-                          ? "bg-white text-primary shadow-sm"
-                          : "text-on-surface-variant hover:text-on-surface"
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="relative flex-1">
-                <svg viewBox="0 0 800 320" className="h-full w-full">
-                  <defs>
-                    <linearGradient id="lineGradient" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#004ac6" stopOpacity="0.12" />
-                      <stop offset="100%" stopColor="#004ac6" stopOpacity="0.02" />
-                    </linearGradient>
-                  </defs>
-                  {[0, 1, 2, 3].map((row) => (
-                    <line
-                      key={row}
-                      x1="0"
-                      x2="800"
-                      y1={40 + row * 60}
-                      y2={40 + row * 60}
-                      stroke="#e1e2ed"
-                      strokeDasharray="6 6"
-                    />
-                  ))}
-                  <path
-                    d="M0 230 C80 220, 120 210, 160 170 S260 120, 320 130 S420 170, 480 150 S600 90, 640 110 S730 130, 800 80"
-                    fill="none"
-                    stroke="#737686"
-                    strokeWidth="3"
-                    strokeDasharray="8 6"
-                  />
-                  <path
-                    d="M0 220 C80 210, 120 180, 160 150 S260 100, 320 110 S420 130, 480 120 S600 70, 640 80 S730 110, 800 50"
-                    fill="url(#lineGradient)"
-                    stroke="#004ac6"
-                    strokeWidth="3"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M0 220 C80 210, 120 180, 160 150 S260 100, 320 110 S420 130, 480 120 S600 70, 640 80 S730 110, 800 50"
-                    fill="none"
-                    stroke="#004ac6"
-                    strokeWidth="3"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div className="flex min-h-105 w-full flex-col rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8 xl:w-90">
+          <section className="grid gap-6 xl:grid-cols-[minmax(320px,0.8fr)_minmax(0,1.2fr)]">
+            <div className="flex min-h-105 w-full flex-col rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
               <div className="mb-6 flex items-center justify-between">
                 <h4 className="font-h3-desktop text-h3-desktop text-on-surface">
                   Recent Activity
@@ -336,7 +333,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="flex-1 space-y-6">
                 {activityItems.map((item) => (
-                  <div key={item.time} className="flex items-start gap-4">
+                  <div key={`${item.title}-${item.time}`} className="flex items-start gap-4">
                     <div
                       className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${item.iconStyle}`}
                     >
@@ -344,22 +341,7 @@ export default function AdminDashboardPage() {
                     </div>
                     <div>
                       <p className="text-body-sm text-on-surface">
-                        {item.title.startsWith("2 New") || item.title.includes("SRP") ? (
-                          <>
-                            {item.title === "SRP Violation" ? (
-                              <>
-                                New <span className="font-bold text-error">{item.title}</span>{" "}
-                              </>
-                            ) : (
-                              <span className="font-bold">{item.title}</span>
-                            )}
-                            {item.description}
-                          </>
-                        ) : (
-                          <>
-                            <span className="font-bold">{item.title}</span> {item.description}
-                          </>
-                        )}
+                        <span className="font-semibold">{item.title}</span> {item.description}
                       </p>
                       <div className="mt-1 flex items-center gap-2">
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-outline">
@@ -381,7 +363,7 @@ export default function AdminDashboardPage() {
             <div className="rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
               <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <h4 className="font-h3-desktop text-h3-desktop text-on-surface">
-                  Watchlist Compliance
+                  Store Compliance
                 </h4>
                 <div className="flex gap-2">
                   <button className="flex items-center gap-1.5 rounded-xl border border-outline-variant px-3 py-2 text-xs font-semibold text-on-surface-variant">
@@ -398,45 +380,23 @@ export default function AdminDashboardPage() {
                 <table className="min-w-full text-left">
                   <thead>
                     <tr className="border-b border-outline-variant/30">
-                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Commodity</th>
-                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Current Avg</th>
-                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">SRP Limit</th>
-                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Trend (7d)</th>
-                      <th className="pb-4 text-right text-[10px] font-semibold uppercase tracking-wide text-outline">Status</th>
+                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Store Name</th>
+                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Price Records</th>
+                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Last Updated</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/20">
-                    {watchlistRows.map((row) => (
-                      <tr key={row.commodity}>
+                    {storeComplianceRows.map((row) => (
+                      <tr key={row.id}>
                         <td className="py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-container-high font-bold text-primary">
-                              {row.initials}
-                            </div>
-                            <span className="font-semibold text-on-surface">{row.commodity}</span>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-on-surface">{row.name}</span>
+                            <span className="text-sm text-on-surface-variant">{row.location}</span>
                           </div>
                         </td>
-                        <td className="py-4 text-sm font-semibold text-on-surface">{row.currentAvg}</td>
-                        <td className="py-4 text-sm text-on-surface-variant">{row.srp}</td>
-                        <td className="py-4">
-                          <div className={`flex items-center gap-1 ${row.trendColor}`}>
-                            {row.trendIcon ? <row.trendIcon size={14} /> : null}
-                            <span className="text-xs font-bold">{row.trend}</span>
-                          </div>
-                        </td>
-                        <td className="py-4 text-right">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold ${row.statusStyle}`}
-                          >
-                            {row.status === "Compliant" ? (
-                              <>
-                                <MdOutlineCheckCircle className="mr-1" size={12} />
-                                Compliant
-                              </>
-                            ) : (
-                              row.status
-                            )}
-                          </span>
+                        <td className="py-4 text-sm font-semibold text-on-surface">{row.priceRecordCount}</td>
+                        <td className="py-4 text-sm text-on-surface-variant">
+                          {row.lastUpdated ? new Date(row.lastUpdated).toLocaleDateString() : '—'}
                         </td>
                       </tr>
                     ))}

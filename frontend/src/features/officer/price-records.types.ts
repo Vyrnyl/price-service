@@ -4,12 +4,14 @@ export interface PriceRecord {
   commodityId: string;
   date: string;
   time: string;
+  dateAndTime?: string;
   store: string;
   location: string;
   commodity: string;
   commodityDetails: string;
   price: string;
   status: string;
+  statusValue?: PriceStatusValue;
   srp?: string;
   officerInitials: string;
   officerName: string;

@@ -15,3 +15,10 @@ export async function createReport(payload: CreateReportPayload) {
     credentials: "include",
   });
 }
+
+export async function deleteAllReports() {
+  return apiFetch<{ status: string; data: unknown }>("/api/reports", {
+    method: "DELETE",
+    credentials: "include",
+  });
+}

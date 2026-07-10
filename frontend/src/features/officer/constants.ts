@@ -10,7 +10,8 @@ export const ICON_BUTTON_CLASSES =
   "flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant transition-all hover:bg-surface-container";
 
 export const STORE_FILTER_OPTIONS = ["All Municipalities", "Virac", "San Andres", "Caramoran", "Pandan", "Bato"];
-export const STATUS_CHIPS = ["Price Monitoring Week 3", "Wet Markets", "Supermarkets", "Recently Updated"];
+export const STATUS_FILTER_OPTIONS = ["All Statuses", "Monitored", "Pending"];
+export const STATUS_CHIPS = ["All", "Monitored", "Pending", "Recently Updated"];
 
 export const INPUT_CLASSES =
   "w-full rounded-xl border border-outline bg-surface px-4 py-3 text-body-sm text-on-surface outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20";

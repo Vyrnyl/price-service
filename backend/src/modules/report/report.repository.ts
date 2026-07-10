@@ -4,7 +4,7 @@ import type { CreateReportInput, UpdateReportInput } from './report.schema';
 
 export const reportRepository = {
   create: (data: CreateReportInput, userId: string) => {
-    const { format, commodityGroup, ...rest } = data;
+    const { format, commodityGroup, storeId, ...rest } = data;
 
     return prisma.report.create({
       data: {
@@ -26,8 +26,10 @@ export const reportRepository = {
       include: { user: true },
     }),
 
+  deleteAll: () => prisma.report.deleteMany(),
+
   update: (id: string, data: UpdateReportInput) => {
-    const { format, commodityGroup, ...rest } = data;
+    const { format, commodityGroup, storeId, ...rest } = data;
     const updateData: Prisma.ReportUpdateInput = {
       ...rest,
     };

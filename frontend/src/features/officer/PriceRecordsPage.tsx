@@ -26,6 +26,23 @@ const STATUS_OPTIONS = [
   { value: "UNDERPRICE", label: "Below SRP" },
 ] as const;
 
+function formatInputDateTime(value: string) {
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60000;
+  const localDate = new Date(date.getTime() - offset);
+  return localDate.toISOString().slice(0, 16);
+}
+
+function createDefaultRecord(): CreatePriceRecordPayload {
+  return {
+    commodityId: "",
+    storeId: "",
+    price: 0,
+    dateAndTime: new Date().toISOString().slice(0, 16),
+    status: "COMPLIANT",
+  };
+}
+
 function mapBackendPriceRecord(record: any): PriceRecord {
   const dateObject = new Date(record.dateAndTime);
   const date = dateObject.toLocaleDateString("en-US", {
@@ -59,12 +76,14 @@ function mapBackendPriceRecord(record: any): PriceRecord {
     commodityId: record.commodity?.id ?? "",
     date,
     time,
+    dateAndTime: record.dateAndTime,
     store: record.store?.name ?? "Unknown store",
     location: record.store?.location ?? "",
     commodity: record.commodity?.name ?? "Unknown commodity",
     commodityDetails: record.commodity?.category ?? "",
     price: `₱${Number(record.price).toFixed(2)}`,
     status: statusLabel,
+    statusValue: record.status,
     srp: record.srp ? `₱${Number(record.srp).toFixed(2)}` : undefined,
     officerInitials,
     officerName,
@@ -84,18 +103,13 @@ export default function PriceRecordsPage({
   const [commodities, setCommodities] = useState<CommodityOption[]>([]);
   const [records, setRecords] = useState<PriceRecord[]>([]);
   const [formOpen, setFormOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<PriceRecord | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<
     Partial<Record<keyof CreatePriceRecordPayload, string>>
   >({});
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [newRecord, setNewRecord] = useState<CreatePriceRecordPayload>({
-    commodityId: "",
-    storeId: "",
-    price: 0,
-    dateAndTime: new Date().toISOString().slice(0, 16),
-    status: "COMPLIANT",
-  });
+  const [newRecord, setNewRecord] = useState<CreatePriceRecordPayload>(createDefaultRecord);
 
   useEffect(() => {
     const loadData = async () => {
@@ -153,7 +167,37 @@ export default function PriceRecordsPage({
     }
   };
 
-  const handleAddRecord = async (event: FormEvent<HTMLFormElement>) => {
+  const handleCloseForm = () => {
+    setFormOpen(false);
+    setEditingRecord(null);
+    setFormError(null);
+    setFormErrors({});
+    setNewRecord(createDefaultRecord());
+  };
+
+  const handleOpenCreateForm = () => {
+    setEditingRecord(null);
+    setFormError(null);
+    setFormErrors({});
+    setNewRecord(createDefaultRecord());
+    setFormOpen(true);
+  };
+
+  const handleEditRecord = (record: PriceRecord) => {
+    setEditingRecord(record);
+    setFormError(null);
+    setFormErrors({});
+    setNewRecord({
+      commodityId: record.commodityId,
+      storeId: record.storeId,
+      price: Number(record.price.replace(/[^\d.]/g, "")) || 0,
+      dateAndTime: record.dateAndTime ? formatInputDateTime(record.dateAndTime) : "",
+      status: (record.statusValue ?? "COMPLIANT") as CreatePriceRecordPayload["status"],
+    });
+    setFormOpen(true);
+  };
+
+  const handleSubmitRecord = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError(null);
 
@@ -180,30 +224,34 @@ export default function PriceRecordsPage({
 
     try {
       setSubmitLoading(true);
+      const payload = {
+        ...newRecord,
+        dateAndTime: new Date(newRecord.dateAndTime).toISOString(),
+      };
       const response = await apiFetch<{ status: string; data: any }>(
-        "/api/price-records",
+        editingRecord ? `/api/price-records/${editingRecord.id}` : "/api/price-records",
         {
-          method: "POST",
-          body: {
-            ...newRecord,
-            dateAndTime: new Date(newRecord.dateAndTime).toISOString(),
-          },
+          method: editingRecord ? "PUT" : "POST",
+          body: payload,
         },
       );
 
-      setRecords((current) => [
-        mapBackendPriceRecord(response.data),
-        ...current,
-      ]);
-      setFormOpen(false);
-      setNewRecord({
-        commodityId: "",
-        storeId: "",
-        price: 0,
-        dateAndTime: new Date().toISOString().slice(0, 16),
-        status: "COMPLIANT",
-      });
-      setFormErrors({});
+      if (editingRecord) {
+        setRecords((current) =>
+          current.map((record) =>
+            record.id === editingRecord.id
+              ? mapBackendPriceRecord(response.data)
+              : record,
+          ),
+        );
+      } else {
+        setRecords((current) => [
+          mapBackendPriceRecord(response.data),
+          ...current,
+        ]);
+      }
+
+      handleCloseForm();
     } catch (error: unknown) {
       setFormError(
         error instanceof Error ? error.message : "Unable to save price record.",
@@ -234,10 +282,7 @@ export default function PriceRecordsPage({
               {canCreateRecord ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    setFormError(null);
-                    setFormOpen((current) => !current);
-                  }}
+                  onClick={handleOpenCreateForm}
                   className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md"
                 >
                   <MdAdd size={20} />
@@ -269,14 +314,15 @@ export default function PriceRecordsPage({
                 formErrors={formErrors}
                 submitLoading={submitLoading}
                 newRecord={newRecord}
+                mode={editingRecord ? "edit" : "create"}
                 onChange={handleFieldChange}
-                onCancel={() => setFormOpen(false)}
-                onSubmit={handleAddRecord}
+                onCancel={handleCloseForm}
+                onSubmit={handleSubmitRecord}
               />
             </div>
           ) : null}
 
-          <PriceRecordsTable records={filteredRecords} />
+          <PriceRecordsTable records={filteredRecords} onEdit={handleEditRecord} />
         </div>
       </section>
     </main>

@@ -17,6 +17,7 @@ interface PriceRecordFormProps {
   formErrors: Partial<Record<keyof CreatePriceRecordPayload, string>>;
   submitLoading: boolean;
   newRecord: CreatePriceRecordPayload;
+  mode?: "create" | "edit";
   onChange: (field: keyof CreatePriceRecordPayload, value: string | number) => void;
   onCancel: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
@@ -35,17 +36,23 @@ export default function PriceRecordForm({
   formErrors,
   submitLoading,
   newRecord,
+  mode = "create",
   onChange,
   onCancel,
   onSubmit,
 }: PriceRecordFormProps) {
+  const isEditMode = mode === "edit";
   return (
     <div className="mx-auto w-full max-w-3xl rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-h3-desktop font-semibold text-on-surface">Add Price Record</h2>
+          <h2 className="text-h3-desktop font-semibold text-on-surface">
+            {isEditMode ? "Edit Price Record" : "Add Price Record"}
+          </h2>
           <p className="mt-2 text-body-sm text-on-surface-variant">
-            Record a new commodity price entry from your assigned inspection route.
+            {isEditMode
+              ? "Update the selected commodity price entry from your assigned inspection route."
+              : "Record a new commodity price entry from your assigned inspection route."}
           </p>
         </div>
         <button
@@ -144,7 +151,7 @@ export default function PriceRecordForm({
 
         <div className="flex flex-wrap gap-3 sm:col-span-2">
           <button type="submit" disabled={submitLoading} className={PRIMARY_BUTTON_CLASSES}>
-            {submitLoading ? "Saving..." : "Save Record"}
+            {submitLoading ? (isEditMode ? "Updating..." : "Saving...") : isEditMode ? "Update Record" : "Save Record"}
           </button>
           <button
             type="button"
