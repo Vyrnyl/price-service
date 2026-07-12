@@ -49,4 +49,8 @@ exports.reportController = {
         await report_service_1.reportService.deleteReport(id);
         res.status(204).send();
     },
+    deleteAllReports: async (_req, res) => {
+        await report_service_1.reportService.deleteAllReports();
+        res.status(204).send();
+    },
 };

@@ -1,72 +1,249 @@
+"use client";
+
+import { useState } from "react";
 import {
   MdAutoAwesome,
+  MdBarChart,
   MdBolt,
+  MdChevronRight,
+  MdClose,
   MdInfo,
+  MdKeyboardArrowDown,
+  MdMonetizationOn,
   MdSchedule,
+  MdSearch,
   MdTrendingUp,
   MdVerified,
 } from "react-icons/md";
 
+const rangeOptions = ["1M", "6M", "1Y"] as const;
+
+type RangeKey = (typeof rangeOptions)[number];
+
+const rangeInsightMap: Record<
+  RangeKey,
+  {
+    title: string;
+    price: string;
+    change: string;
+    confidence: string;
+    projection: string;
+    path: string;
+    labels: string[];
+  }
+> = {
+  "1M": {
+    title: "Last 30 Days",
+    price: "₱56.20",
+    change: "+0.8% vs previous cycle",
+    confidence: "High",
+    projection: "Slight upward pressure from transport costs",
+    path: "M 0,260 L 120,245 L 240,250 L 360,220 L 480,205 L 600,195 L 760,170 L 920,155 L 1000,140",
+    labels: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+  },
+  "6M": {
+    title: "Last 6 Months",
+    price: "₱55.00",
+    change: "+3.2% vs the same period last year",
+    confidence: "High",
+    projection: "Seasonal demand is lifting rates gradually",
+    path: "M 0,300 L 120,290 L 240,270 L 360,240 L 480,225 L 600,205 L 760,180 L 920,155 L 1000,140",
+    labels: ["MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT"],
+  },
+  "1Y": {
+    title: "Last 12 Months",
+    price: "₱53.80",
+    change: "+7.4% across the year",
+    confidence: "Medium",
+    projection: "Longer-term stability with seasonal spikes",
+    path: "M 0,280 L 120,272 L 240,260 L 360,245 L 480,220 L 600,205 L 760,185 L 920,160 L 1000,140",
+    labels: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG"],
+  },
+};
+
+const summaryCards = [
+  {
+    title: "Current price",
+    value: "₱55.00",
+    detail: "As of today",
+    icon: MdMonetizationOn,
+    accent: "text-primary",
+  },
+  {
+    title: "SRP benchmark",
+    value: "₱54.00",
+    detail: "Within policy range",
+    icon: MdVerified,
+    accent: "text-success",
+  },
+  {
+    title: "Forecasted next month",
+    value: "₱57.00",
+    detail: "Projected increase",
+    icon: MdTrendingUp,
+    accent: "text-error",
+  },
+  {
+    title: "Compliance status",
+    value: "Compliant",
+    detail: "Stable market watch",
+    icon: MdBarChart,
+    accent: "text-primary",
+  },
+];
+
+const dailyChanges = [
+  { label: "Today", value: "+₱1.00", note: "From yesterday's average" },
+  { label: "This week", value: "+₱2.50", note: "Compared with last week" },
+  { label: "30-day trend", value: "+₱3.20", note: "Across the latest month" },
+];
+
+const commodityOptions = [
+  "Rice (Well-milled)",
+  "Sugar (Refined)",
+  "Pork (Liempo)",
+  "Chicken (Whole)",
+  "Cooking Oil",
+  "Eggs",
+  "Milk Powder",
+  "Vermicelli",
+];
+
 export default function PriceAnalysisPage() {
+  const [activeRange, setActiveRange] = useState<RangeKey>("6M");
+  const [selectedCommodity, setSelectedCommodity] = useState(commodityOptions[0]);
+  const [isCommodityOpen, setIsCommodityOpen] = useState(false);
+  const [commoditySearch, setCommoditySearch] = useState("");
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const activeInsight = rangeInsightMap[activeRange];
+
+  const filteredCommodities = commodityOptions.filter((option) =>
+    option.toLowerCase().includes(commoditySearch.trim().toLowerCase()),
+  );
+
   return (
-    <main className="min-h-screen lg:ml-72">
-      <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-container-margin-mobile py-12 md:px-container-margin-desktop">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h2 className="font-h1-desktop text-h1-desktop text-on-surface">
-              Advanced Market Analytics
+    <main className="min-h-screen bg-surface-container-low lg:ml-72">
+      <section className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-container-margin-mobile py-8 md:px-container-margin-desktop md:py-10">
+        <div className="flex flex-col gap-4 rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+              <MdBarChart size={14} />
+              Public price analysis
+            </div>
+            <h2 className="text-3xl font-semibold tracking-tight text-on-surface md:text-4xl">
+              Price trends and forecasts
             </h2>
-            <p className="font-body-sm text-on-surface-variant">
-              Comprehensive price tracking and AI-driven forecasting for essential
-              commodities.
+            <p className="mt-2 text-sm text-on-surface-variant md:text-base">
+              Follow essential commodity movements, understand current compliance, and review the latest outlook for the market.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-2">
-            <span className="px-2 font-label-caps text-label-caps text-outline">
-              SELECT COMMODITY:
-            </span>
-            <select className="border-none bg-transparent text-body-sm font-semibold text-primary focus:ring-0">
-              <option>Rice (Well-milled)</option>
-              <option>Sugar (Refined)</option>
-              <option>Pork (Liempo)</option>
-              <option>Chicken (Whole)</option>
-            </select>
+          <div className="relative w-full min-w-60 md:w-67.5">
+            <button
+              type="button"
+              className="flex w-full items-center justify-between rounded-2xl border border-outline-variant bg-surface-container-high px-3 py-2 text-left"
+              onClick={() => {
+                setIsCommodityOpen((value) => !value);
+                setCommoditySearch("");
+              }}
+            >
+              <span className="flex flex-col">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+                  Commodity
+                </span>
+                <span className="text-sm font-semibold text-primary">{selectedCommodity}</span>
+              </span>
+              <MdKeyboardArrowDown className={`transition-transform ${isCommodityOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {isCommodityOpen ? (
+              <div className="absolute left-0 top-full z-20 mt-2 w-full rounded-2xl border border-outline-variant bg-surface-container-lowest p-2 shadow-lg">
+                <div className="relative mb-2">
+                  <MdSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-outline" />
+                  <input
+                    type="text"
+                    value={commoditySearch}
+                    onChange={(event) => setCommoditySearch(event.target.value)}
+                    placeholder="Search commodity"
+                    className="w-full rounded-xl border border-outline-variant bg-surface-container-high py-2 pl-9 pr-3 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+                <div className="max-h-52 overflow-y-auto">
+                  {filteredCommodities.length > 0 ? (
+                    filteredCommodities.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition-colors ${
+                          selectedCommodity === option
+                            ? "bg-primary/10 text-primary"
+                            : "text-on-surface hover:bg-surface-container-high"
+                        }`}
+                        onClick={() => {
+                          setSelectedCommodity(option);
+                          setIsCommodityOpen(false);
+                          setCommoditySearch("");
+                        }}
+                      >
+                        {option}
+                      </button>
+                    ))
+                  ) : (
+                    <p className="px-3 py-2 text-sm text-on-surface-variant">No commodities found.</p>
+                  )}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <section className="grid grid-cols-1 gap-6">
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-h3-desktop text-h3-desktop text-on-surface">
-                  6-Month Price Trend
-                </h3>
-                <div className="mt-2 flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-primary"></span>
-                    <span className="font-label-caps text-label-caps text-on-surface-variant">
-                      Actual Price
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-0.5 w-3 border-t-2 border-dashed border-outline-variant"></span>
-                    <span className="font-label-caps text-label-caps text-on-surface-variant">
-                      Suggested Retail Price (SRP)
-                    </span>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {summaryCards.map((card) => {
+            const Icon = card.icon;
+
+            return (
+              <div
+                key={card.title}
+                className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+                    {card.title}
+                  </span>
+                  <div className={`rounded-xl bg-surface-container-high p-2 ${card.accent}`}>
+                    <Icon size={18} />
                   </div>
                 </div>
+                <p className="text-2xl font-semibold text-on-surface">{card.value}</p>
+                <p className="mt-1 text-sm text-on-surface-variant">{card.detail}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1.45fr_0.8fr]">
+          <section className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+            <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+                  Price trend
+                </p>
+                <h3 className="mt-1 text-xl font-semibold text-on-surface">{activeInsight.title}</h3>
+                <p className="mt-1 text-sm text-on-surface-variant">
+                  {activeInsight.change} • {activeInsight.confidence} confidence
+                </p>
               </div>
 
-              <div className="hidden gap-2 md:flex">
-                {['1M', '6M', '1Y'].map((range, index) => (
+              <div className="flex gap-2">
+                {rangeOptions.map((range) => (
                   <button
                     key={range}
-                    className={`rounded-full px-4 py-2 font-label-caps text-label-caps transition-all ${
-                      index === 1
+                    className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-all ${
+                      activeRange === range
                         ? "bg-primary text-on-primary"
-                        : "bg-surface-container-high hover:bg-primary hover:text-on-primary"
+                        : "bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest"
                     }`}
+                    onClick={() => setActiveRange(range)}
                   >
                     {range}
                   </button>
@@ -74,214 +251,212 @@ export default function PriceAnalysisPage() {
               </div>
             </div>
 
-            <div className="relative h-[400px] border-b border-l border-outline-variant">
-              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
-                {[0, 1, 2, 3, 4].map((line) => (
-                  <div key={line} className="w-full border-t border-surface-variant" />
+            <div className="rounded-2xl border border-outline-variant bg-surface-container p-4">
+              <div className="relative h-70">
+                <div className="pointer-events-none absolute inset-0 flex flex-col justify-between">
+                  {[0, 1, 2, 3, 4].map((line) => (
+                    <div key={line} className="w-full border-t border-surface-variant/80" />
+                  ))}
+                </div>
+
+                <svg className="h-full w-full" viewBox="0 0 1000 320" preserveAspectRatio="none">
+                  <path
+                    d="M 0,225 L 200,220 L 400,215 L 600,200 L 800,180 L 1000,170"
+                    fill="none"
+                    stroke="#8E97A8"
+                    strokeDasharray="8 6"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d={activeInsight.path}
+                    fill="none"
+                    stroke="#004ac6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="4"
+                  />
+                  <circle cx="760" cy="180" r="6" fill="#004ac6" stroke="#ffffff" strokeWidth="2" />
+                </svg>
+
+                <div className="absolute left-[74%] top-4 z-10 rounded-2xl border border-outline-variant bg-surface-container-lowest p-3 shadow-sm">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-outline">Latest point</p>
+                  <p className="text-xl font-semibold text-on-surface">{activeInsight.price}</p>
+                  <p className="text-sm text-success">{activeInsight.change}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {activeInsight.labels.map((label) => (
+                  <span key={label} className="rounded-full bg-surface-container-high px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-on-surface-variant">
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-6">
+            <div className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="rounded-2xl bg-primary/10 p-2 text-primary">
+                  <MdBolt size={20} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+                    Forecast outlook
+                  </p>
+                  <h3 className="mt-1 text-xl font-semibold text-on-surface">Next month snapshot</h3>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {[
+                  { label: "Current price", value: "₱55.00" },
+                  { label: "Projected", value: "₱57.00" },
+                  { label: "Confidence", value: "95%" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between rounded-2xl bg-surface-container px-3 py-2.5">
+                    <span className="text-sm text-on-surface-variant">{item.label}</span>
+                    <span className="text-sm font-semibold text-on-surface">{item.value}</span>
+                  </div>
                 ))}
               </div>
 
-              <svg className="h-full w-full" viewBox="0 0 1000 400" preserveAspectRatio="none">
-                <path
-                  d="M 0,250 L 200,250 L 400,250 L 600,280 L 800,280 L 1000,280"
-                  fill="none"
-                  opacity="0.5"
-                  stroke="#737686"
-                  strokeDasharray="8 4"
-                  strokeWidth="2"
-                />
-                <path
-                  className="chart-path-animate"
-                  d="M 0,300 L 100,280 L 200,290 L 300,220 L 400,240 L 500,210 L 600,230 L 700,190 L 800,150 L 900,170 L 1000,140"
-                  fill="none"
-                  stroke="#004ac6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="4"
-                />
-                <circle cx="200" cy="290" r="4" fill="#004ac6" />
-                <circle cx="400" cy="240" r="4" fill="#004ac6" />
-                <circle cx="600" cy="230" r="4" fill="#004ac6" />
-                <circle cx="800" cy="150" r="6" fill="#004ac6" stroke="white" strokeWidth="2" />
-              </svg>
-
-              <div className="absolute left-[78%] top-[80px] z-10 hidden rounded-lg bg-inverse-surface p-4 text-inverse-on-surface shadow-lg md:block">
-                <p className="text-[10px] font-label-caps opacity-70">AUG 24, 2024</p>
-                <p className="font-price-display text-price-display">₱55.00</p>
-                <p className="font-body-sm text-green-400">+2.5% vs Prev</p>
-              </div>
-
-              <div className="absolute -bottom-8 flex w-full justify-between px-4 font-label-caps text-label-caps text-on-surface-variant">
-                <span>MAR</span>
-                <span>APR</span>
-                <span>MAY</span>
-                <span>JUN</span>
-                <span>JUL</span>
-                <span>AUG</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-6">
-          <div className="flex items-center gap-3">
-            <MdBolt className="text-secondary" size={24} />
-            <h3 className="font-h3-desktop text-h3-desktop text-on-surface">
-              Future Price Forecast
-              <span className="ml-2 text-body-sm font-normal text-on-surface-variant">
-                Powered by ARIMA
-              </span>
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-            {[
-              {
-                label: "CURRENT PRICE",
-                value: "₱55",
-                note: "As of Today",
-                icon: MdSchedule,
-                cardClass: "bg-surface-container-lowest border border-outline-variant",
-                valueClass: "text-on-surface",
-                noteClass: "text-on-surface-variant",
-              },
-              {
-                label: "PREDICTED NEXT MONTH",
-                value: "₱57",
-                note: "AI Projection",
-                icon: MdAutoAwesome,
-                cardClass: "bg-primary-container text-on-primary-container",
-                valueClass: "text-on-primary-container",
-                noteClass: "opacity-90",
-              },
-              {
-                label: "EXPECTED CHANGE",
-                value: "+3.6%",
-                note: "Rising Trend",
-                icon: MdTrendingUp,
-                cardClass: "bg-surface-container-lowest border border-outline-variant",
-                valueClass: "text-error",
-                noteClass: "text-on-surface-variant",
-              },
-              {
-                label: "CONFIDENCE",
-                value: "95%",
-                note: "High Reliability",
-                icon: MdVerified,
-                cardClass: "bg-surface-container-lowest border border-outline-variant",
-                valueClass: "text-on-surface",
-                noteClass: "text-on-surface-variant",
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.label}
-                  className="flex min-w-48 flex-1 flex-col rounded-2xl border border-outline-variant bg-white p-4 shadow-sm data-card-shadow"
+              <div className="mt-5 rounded-2xl border border-outline-variant bg-surface-container-high p-4">
+                <p className="text-sm text-on-surface-variant">{activeInsight.projection}</p>
+                <button
+                  type="button"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary"
+                  onClick={() => setShowDetailModal(true)}
                 >
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <span className={`rounded-xl p-2 ${item.cardClass.includes("bg-primary-container") ? "bg-primary/10" : "bg-surface-container-high"}`}>
-                      <Icon className={item.cardClass.includes("bg-primary-container") ? "text-primary" : "text-on-surface-variant"} size={20} />
-                    </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-outline">
-                      Today
-                    </span>
+                  View detailed report <MdChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+              <div className="flex items-center gap-2">
+                <MdInfo className="text-primary" size={18} />
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+                  Consumer note
+                </p>
+              </div>
+              <p className="mt-3 text-sm leading-6 text-on-surface">
+                This forecast supports awareness of likely movements, but market outcomes may vary because of logistics, weather, and local supply changes.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+          <section className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+                  Daily price changes
+                </p>
+                <h3 className="mt-1 text-xl font-semibold text-on-surface">Recent movement in the commodity price</h3>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {dailyChanges.map((change) => (
+                <div key={change.label} className="rounded-2xl border border-outline-variant bg-surface-container-high p-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-on-surface">{change.label}</span>
+                    <span className="font-semibold text-primary">{change.value}</span>
                   </div>
-                  <p className="mb-1 font-label-caps text-label-caps text-on-surface-variant">
-                    {item.label}
-                  </p>
-                  <h3 className="text-[28px] font-bold leading-none text-on-surface">
-                    {item.value}
-                  </h3>
+                  <p className="mt-2 text-sm text-on-surface-variant">{change.note}</p>
                 </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-1 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-            <div className="relative h-[250px]">
-              <svg className="h-full w-full overflow-visible" viewBox="0 0 1000 200">
-                <path d="M 700,50 L 1000,20 L 1000,80 L 700,50" fill="#2563eb" fillOpacity="0.1" />
-                <path
-                  d="M 0,150 L 100,140 L 200,160 L 300,120 L 400,110 L 500,90 L 600,100 L 700,50"
-                  fill="none"
-                  stroke="#004ac6"
-                  strokeWidth="3"
-                />
-                <path
-                  d="M 700,50 L 800,40 L 900,45 L 1000,30"
-                  fill="none"
-                  stroke="#004ac6"
-                  strokeDasharray="6 4"
-                  strokeWidth="3"
-                />
-                <circle cx="700" cy="50" r="5" fill="#004ac6" />
-                <text x="700" y="30" fill="#004ac6" fontFamily="Inter" fontSize="12" fontWeight="bold">
-                  NOW
-                </text>
-              </svg>
-
-              <div className="absolute bottom-0 flex w-full justify-between px-2 font-label-caps text-label-caps text-on-surface-variant">
-                <span>Past 3 Months</span>
-                <span className="font-bold text-primary">Projection (Next 30 Days)</span>
-              </div>
+              ))}
             </div>
-          </div>
+          </section>
 
-          <div className="flex gap-4 rounded-lg border-l-4 border-primary bg-surface-container p-4">
-            <MdInfo className="text-primary" size={20} />
-            <p className="font-body-sm italic text-on-surface-variant">
-              Disclaimer: This forecast is intended to support consumer awareness
-              and does not represent a government mandate on future pricing.
-              Actual market outcomes may vary due to external economic factors,
-              logistics, and climate events.
+          <section className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+              Forecast method
             </p>
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div className="group relative h-64 overflow-hidden rounded-xl md:col-span-2">
-            <img
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrBNUDu3T76nNZ--_ylU7VV9dmYdGN63ovfqzQ-VahXH7f66pv4Aw42WYjto4wEgv0G_PyMkJTvjo_N30Ot9ZSS30kFWHvQOu8AVGfgl0UNtm5o8UglrPTqJjoWsogz2J7RuIN3D2JWJhNUWmaW5V8d4UrQwlBRCYLj-KusAU6Y2-A1oFcVI9DT5pZAz8a9j04fvr66ar-JDh76JxDNWXMDF3UhZVlfhAsudk8NxfuaZiCJ_t2_5hVso5cGoYdyopNBSsmXeoFRLE"
-              alt="Analyst reviewing market data"
-            />
-            <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent p-6">
-              <h4 className="font-h3-desktop text-h3-desktop text-white">
-                Market Drivers Analysis
-              </h4>
-              <p className="font-body-sm text-white/80">
-                Global supply chain pressures are stabilizing, though local harvest cycles remain a key variable for Rice pricing in Q4.
+            <div className="mt-4 rounded-2xl border border-outline-variant bg-surface-container-high p-4">
+              <p className="text-sm font-semibold text-on-surface">ARIMA-based forecasting</p>
+              <p className="mt-2 text-sm leading-7 text-on-surface-variant">
+                Prices are projected using an ARIMA model that studies recent trends, seasonality, and short-term shifts to estimate the next likely movement.
               </p>
             </div>
-          </div>
-
-          <div className="flex flex-col justify-between rounded-xl bg-surface-container-highest p-6">
-            <div>
-              <h4 className="mb-4 font-h3-desktop text-h3-desktop text-on-surface">
-                Expert Commentary
-              </h4>
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-on-primary">
-                  DC
+            <div className="mt-4 space-y-3">
+              {[
+                { label: "Historical pattern", value: "Included" },
+                { label: "Seasonal effects", value: "Included" },
+                { label: "Short-term outlook", value: "Updated daily" },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between rounded-2xl bg-surface-container px-3 py-2.5">
+                  <span className="text-sm text-on-surface-variant">{item.label}</span>
+                  <span className="text-sm font-semibold text-on-surface">{item.value}</span>
                 </div>
-                <div>
-                  <p className="font-label-caps text-label-caps">DR. CATHERINE REYES</p>
-                  <p className="font-body-sm text-on-surface-variant">Senior Economist</p>
-                </div>
-              </div>
-              <p className="font-body-sm italic text-on-surface">
-                “The 3.6% projected increase is seasonally expected but remains well within the historical SRP variance.”
-              </p>
+              ))}
             </div>
-
-            <button className="mt-4 w-full rounded-lg bg-on-surface px-4 py-2 font-label-caps text-label-caps text-surface transition-opacity hover:opacity-90">
-              READ FULL REPORT
-            </button>
-          </div>
-        </section>
+          </section>
+        </div>
       </section>
+
+      {showDetailModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
+          <div className="w-full max-w-3xl rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">
+                  Detailed forecast report
+                </p>
+                <h3 className="mt-1 text-2xl font-semibold text-on-surface">
+                  {selectedCommodity} forecast overview
+                </h3>
+                <p className="mt-2 text-sm text-on-surface-variant">
+                  Insights for the selected commodity, including current price, expected movement, and the statistical basis behind the projection.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-full bg-surface-container-high p-2 text-on-surface-variant transition-colors hover:bg-surface-container-highest"
+                onClick={() => setShowDetailModal(false)}
+              >
+                <MdClose size={20} />
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-outline-variant bg-surface-container-high p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Current price</p>
+                <p className="mt-2 text-3xl font-semibold text-on-surface">₱55.00</p>
+                <p className="mt-1 text-sm text-on-surface-variant">Compared with the SRP benchmark of ₱54.00</p>
+              </div>
+              <div className="rounded-2xl border border-outline-variant bg-surface-container-high p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Forecast window</p>
+                <p className="mt-2 text-3xl font-semibold text-on-surface">+₱2.00</p>
+                <p className="mt-1 text-sm text-on-surface-variant">Expected over the next month</p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-outline-variant bg-surface-container p-4">
+              <p className="text-sm font-semibold text-on-surface">Why this forecast matters</p>
+              <p className="mt-2 text-sm leading-7 text-on-surface-variant">
+                The outlook is based on the latest price pattern, seasonality, and recent market volatility. The ARIMA model continues to update as new price points arrive, making this view useful for short-term monitoring and planning.
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {[
+                { label: "Confidence", value: "High" },
+                { label: "Range", value: "₱53.00 - ₱57.00" },
+                { label: "Model", value: "ARIMA" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-full border border-outline-variant bg-surface-container-high px-3 py-2 text-sm">
+                  <span className="text-on-surface-variant">{item.label}: </span>
+                  <span className="font-semibold text-on-surface">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

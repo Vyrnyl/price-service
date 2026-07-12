@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import AppError from '../../utils/AppError';
 import { srpService } from './srp.service';
 import { createSrpSchema, updateSrpSchema, srpIdParamSchema } from './srp.schema';
-import type { AuthUser } from '../../types/express';
+import type { AuthUser } from '../../../types/express';
 
 function requireAdmin(user?: AuthUser) {
   if (!user || user.role !== 'ADMIN') {

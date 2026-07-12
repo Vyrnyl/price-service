@@ -1,17 +1,18 @@
 ﻿"use client";
 
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import {
   MdError,
   MdKeyboardArrowDown,
   MdLocalDining,
   MdLocalGroceryStore,
-  MdNotificationsActive,
+  MdOutlineChevronLeft,
+  MdOutlineChevronRight,
   MdSearch,
   MdTrendingDown,
   MdVerifiedUser,
 } from "react-icons/md";
-import { getCommodities, type CommodityItem } from "./api/commodity.api";
+import { getPublicCommodities, type PublicCommodityItem } from "./api/commodity.api";
 
 interface CommodityRow {
   id: string;
@@ -22,69 +23,146 @@ interface CommodityRow {
   srp: string;
   status: string;
   statusTone: string;
+  lastUpdated: string;
+  storeName: string;
+  municipality: string;
   icon: ComponentType<{ className?: string; size?: number }>;
   iconBg: string;
 }
 
-const activityFeed = [
-  {
-    dot: "bg-error",
-    text: (
-      <>
-        <span className="font-bold">Rice (Well-milled)</span> price increased to{" "}
-        <span className="font-bold text-error">₱58.00</span> at ABC Supermarket,
-        exceeding SRP.
-      </>
-    ),
-    time: "2 HOURS AGO",
-  },
-  {
-    dot: "bg-[#00897B]",
-    text: (
-      <>
-        Price inspection completed at <span className="font-bold">Virac Public Market</span>.
-        All basic commodities compliant.
-      </>
-    ),
-    time: "5 HOURS AGO",
-  },
-  {
-    dot: "bg-outline",
-    text: (
-      <>
-        <span className="font-bold">DTI Regional Office</span> issued updated SRP guidelines
-        for Q4 2024.
-      </>
-    ),
-    time: "1 DAY AGO",
-  },
-];
+function formatCurrency(value: number | null) {
+  if (value == null) {
+    return "N/A";
+  }
 
-function mapCommoditiesToRows(commodities: CommodityItem[]): CommodityRow[] {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatLastUpdated(value: string | null) {
+  if (!value) {
+    return "Recently updated";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Recently updated";
+  }
+
+  return new Intl.DateTimeFormat("en-PH", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function getStatusTone(status: string) {
+  switch (status) {
+    case "Above SRP":
+      return "bg-error/10 text-error";
+    case "Below SRP":
+      return "bg-success/10 text-success";
+    case "Compliant":
+      return "bg-primary/10 text-primary";
+    default:
+      return "bg-surface-container/10 text-on-surface-variant";
+  }
+}
+
+function mapCommoditiesToRows(commodities: PublicCommodityItem[]): CommodityRow[] {
   return commodities.map((commodity, index) => ({
     id: commodity.id,
     name: commodity.name,
     category: commodity.category,
     commodityStatus: commodity.status || "Unknown",
-    current: "N/A",
-    srp: "_",
-    status: "Unknown",
-    statusTone: "bg-surface-container/10 text-on-surface-variant",
+    current: formatCurrency(commodity.currentPrice),
+    srp: formatCurrency(commodity.srpPrice),
+    status: commodity.complianceStatus || "Unknown",
+    statusTone: getStatusTone(commodity.complianceStatus || "Unknown"),
+    lastUpdated: formatLastUpdated(commodity.lastUpdatedAt),
+    storeName: commodity.storeName || "N/A",
+    municipality: commodity.storeLocation || "N/A",
     icon: index % 2 === 0 ? MdLocalDining : MdLocalGroceryStore,
     iconBg: "bg-primary-container/10 text-primary",
   }));
 }
 
 export default function CommodityListPage() {
-  const [tableRows, setTableRows] = useState<CommodityRow[]>([]);
+  const [allRows, setAllRows] = useState<CommodityRow[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [municipalityFilter, setMunicipalityFilter] = useState("All");
+  const [storeFilter, setStoreFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pageSize = 5;
+
+  const categories = useMemo(() => {
+    const values = allRows
+      .map((row) => row.category)
+      .filter((value): value is string => Boolean(value))
+      .sort();
+
+    return ["All", ...Array.from(new Set(values))];
+  }, [allRows]);
+
+  const municipalities = useMemo(() => {
+    const values = allRows
+      .map((row) => row.municipality)
+      .filter((value): value is string => value !== "N/A" && Boolean(value))
+      .sort();
+
+    return ["All", ...Array.from(new Set(values))];
+  }, [allRows]);
+
+  const stores = useMemo(() => {
+    const values = allRows
+      .map((row) => row.storeName)
+      .filter((value): value is string => value !== "N/A" && Boolean(value))
+      .sort();
+
+    return ["All", ...Array.from(new Set(values))];
+  }, [allRows]);
+
+  const tableRows = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return allRows.filter((row) => {
+      const matchesSearch =
+        normalizedSearch.length === 0 ||
+        [row.name, row.category, row.storeName, row.municipality, row.commodityStatus, row.status].some((value) =>
+          value.toLowerCase().includes(normalizedSearch),
+        );
+
+      const matchesCategory = categoryFilter === "All" || row.category === categoryFilter;
+      const matchesMunicipality = municipalityFilter === "All" || row.municipality === municipalityFilter;
+      const matchesStore = storeFilter === "All" || row.storeName === storeFilter;
+
+      return matchesSearch && matchesCategory && matchesMunicipality && matchesStore;
+    });
+  }, [allRows, categoryFilter, municipalityFilter, searchTerm, storeFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(tableRows.length / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const pagedRows = useMemo(() => {
+    const startIndex = (safeCurrentPage - 1) * pageSize;
+    return tableRows.slice(startIndex, startIndex + pageSize);
+  }, [safeCurrentPage, tableRows]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, categoryFilter, municipalityFilter, storeFilter]);
 
   useEffect(() => {
     async function loadCommodities() {
       try {
-        const commodities = await getCommodities();
-        setTableRows(mapCommoditiesToRows(commodities));
+        const commodities = await getPublicCommodities();
+        setAllRows(mapCommoditiesToRows(commodities));
       } catch {
         setError("Unable to load commodities. Please try again later.");
       } finally {
@@ -116,23 +194,60 @@ export default function CommodityListPage() {
               className="w-full rounded-xl border border-outline-variant bg-surface py-2.5 pl-10 pr-3 text-sm outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="Search Commodity..."
               type="text"
-              disabled
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="mr-1 text-[11px] font-medium uppercase tracking-wide text-outline">Filters:</span>
-            <button className="flex items-center gap-1 rounded-full bg-surface-container-high px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-surface-container-highest">
-              Category: All
+            <label className="relative flex items-center gap-1 overflow-hidden rounded-full bg-surface-container-high px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-surface-container-highest">
+              <span className="whitespace-nowrap">{categoryFilter === "All" ? "Category: All" : `Category: ${categoryFilter}`}</span>
               <MdKeyboardArrowDown />
-            </button>
-            <button className="flex items-center gap-1 rounded-full bg-surface-container-high px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-surface-container-highest">
-              Municipality: Virac
+              <select
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0"
+                value={categoryFilter}
+                onChange={(event) => setCategoryFilter(event.target.value)}
+                aria-label="Filter by category"
+              >
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category === "All" ? "All categories" : category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="relative flex items-center gap-1 overflow-hidden rounded-full bg-surface-container-high px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-surface-container-highest">
+              <span className="whitespace-nowrap">{municipalityFilter === "All" ? "Municipality: All" : `Municipality: ${municipalityFilter}`}</span>
               <MdKeyboardArrowDown />
-            </button>
-            <button className="flex items-center gap-1 rounded-full bg-surface-container-high px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-surface-container-highest">
-              Store: ABC Supermarket
+              <select
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0"
+                value={municipalityFilter}
+                onChange={(event) => setMunicipalityFilter(event.target.value)}
+                aria-label="Filter by municipality"
+              >
+                {municipalities.map((municipality) => (
+                  <option key={municipality} value={municipality}>
+                    {municipality === "All" ? "All municipalities" : municipality}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="relative flex items-center gap-1 overflow-hidden rounded-full bg-surface-container-high px-3 py-1.5 text-xs text-on-surface transition-colors hover:bg-surface-container-highest">
+              <span className="whitespace-nowrap">{storeFilter === "All" ? "Store: All" : `Store: ${storeFilter}`}</span>
               <MdKeyboardArrowDown />
-            </button>
+              <select
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0"
+                value={storeFilter}
+                onChange={(event) => setStoreFilter(event.target.value)}
+                aria-label="Filter by store"
+              >
+                {stores.map((store) => (
+                  <option key={store} value={store}>
+                    {store === "All" ? "All stores" : store}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         </div>
       </section>
@@ -150,6 +265,7 @@ export default function CommodityListPage() {
               <thead>
                 <tr className="border-b border-outline-variant bg-surface-container-low">
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Commodity</th>
+                  <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Store</th>
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Category</th>
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Status</th>
                   <th className="px-3 py-3 text-[10px] font-semibold uppercase tracking-wide text-outline">Current</th>
@@ -160,18 +276,18 @@ export default function CommodityListPage() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-sm text-on-surface-variant">
+                    <td colSpan={7} className="py-12 text-center text-sm text-on-surface-variant">
                       Loading commodities...
                     </td>
                   </tr>
                 ) : tableRows.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-sm text-on-surface-variant">
+                    <td colSpan={7} className="py-12 text-center text-sm text-on-surface-variant">
                       No commodities found.
                     </td>
                   </tr>
                 ) : (
-                  tableRows.map((row, index) => {
+                  pagedRows.map((row) => {
                     const Icon = row.icon;
                     return (
                       <tr
@@ -186,11 +302,12 @@ export default function CommodityListPage() {
                             <div>
                               <div className="text-sm font-semibold text-on-surface">{row.name}</div>
                               <div className="text-[11px] text-outline">
-                                Last updated: {index === 0 ? "2h ago" : index === 1 ? "5h ago" : index === 2 ? "1d ago" : "3h ago"}
+                                {row.storeName !== "N/A" ? `${row.storeName}` : "No recent store data"}
                               </div>
                             </div>
                           </div>
                         </td>
+                        <td className="px-3 py-3 text-sm text-on-surface-variant">{row.storeName !== "N/A" ? row.storeName : "No store data"}</td>
                         <td className="px-3 py-3">
                           <span className="rounded-md bg-surface-variant px-2.5 py-1 text-xs text-on-surface-variant">{row.category}</span>
                         </td>
@@ -198,10 +315,13 @@ export default function CommodityListPage() {
                         <td className="px-3 py-3 text-sm font-semibold text-on-surface">{row.current}</td>
                         <td className="px-3 py-3 text-sm text-outline">{row.srp}</td>
                         <td className="px-3 py-3">
-                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide shadow-sm ${row.statusTone}`}>
-                            {row.status.includes("Above") ? <MdError size={12} /> : row.status === "Compliant" ? <MdVerifiedUser size={12} /> : row.status === "Below SRP" ? <MdTrendingDown size={12} /> : <MdError size={12} />}
-                            {row.status}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide shadow-sm ${row.statusTone}`}>
+                              {row.status.includes("Above") ? <MdError size={12} /> : row.status === "Compliant" ? <MdVerifiedUser size={12} /> : row.status === "Below SRP" ? <MdTrendingDown size={12} /> : <MdError size={12} />}
+                              {row.status}
+                            </span>
+                            <span className="text-[11px] text-outline">Updated {row.lastUpdated}</span>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -212,26 +332,40 @@ export default function CommodityListPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-outline-variant bg-surface-container-low p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-on-surface">
-              <MdNotificationsActive className="text-primary" />
-              Latest Activity
-            </h3>
-            <a className="text-xs font-medium text-primary hover:underline" href="#">
-              View All
-            </a>
-          </div>
-          <div className="space-y-3">
-            {activityFeed.map((item) => (
-              <div key={item.time} className="flex gap-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest p-3">
-                <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.dot}`} />
-                <div>
-                  <p className="text-sm leading-snug text-on-surface">{item.text}</p>
-                  <span className="mt-1 block text-[11px] text-outline">{item.time}</span>
-                </div>
-              </div>
+        <div className="flex flex-col gap-3 border-t border-outline-variant bg-surface-container-low px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-on-surface-variant">
+            Showing {tableRows.length === 0 ? 0 : `${(safeCurrentPage - 1) * pageSize + 1}-${Math.min(safeCurrentPage * pageSize, tableRows.length)}`} of {tableRows.length} commodities
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-outline transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={safeCurrentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            >
+              <MdOutlineChevronLeft size={20} />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+              <button
+                key={page}
+                className={`flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-semibold transition-colors ${
+                  safeCurrentPage === page
+                    ? "border-primary bg-primary text-on-primary"
+                    : "border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high"
+                }`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
             ))}
+
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-outline transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={safeCurrentPage === totalPages}
+              onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+            >
+              <MdOutlineChevronRight size={20} />
+            </button>
           </div>
         </div>
       </div>

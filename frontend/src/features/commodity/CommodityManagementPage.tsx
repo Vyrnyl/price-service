@@ -282,7 +282,7 @@ export default function CommodityManagementPage({ userRole }: CommodityManagemen
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
               <h2 className="font-h1-desktop text-h1-desktop text-on-surface">
-                Commodity Management
+                Commodity with SRP
               </h2>
               <p className="mt-1 font-body-lg text-on-surface-variant">
                 Track and manage commodity listings, SRP updates, and compliance status.

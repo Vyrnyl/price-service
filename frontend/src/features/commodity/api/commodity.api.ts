@@ -10,6 +10,19 @@ export interface CommodityItem {
   srps?: SrpItem[];
 }
 
+export interface PublicCommodityItem {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  currentPrice: number | null;
+  srpPrice: number | null;
+  complianceStatus: string;
+  lastUpdatedAt: string | null;
+  storeName: string | null;
+  storeLocation: string | null;
+}
+
 export interface CommodityDetailsItem extends CommodityItem {
   srps?: SrpItem[];
 }
@@ -39,6 +52,15 @@ export async function getCommodities() {
   const response = await apiFetch<CommodityApiResponse>("/api/commodities", {
     method: "GET",
     credentials: "include",
+  });
+
+  return response.data;
+}
+
+export async function getPublicCommodities() {
+  const response = await apiFetch<{ status: string; data: PublicCommodityItem[] }>("/api/public/commodities", {
+    method: "GET",
+    credentials: "omit",
   });
 
   return response.data;

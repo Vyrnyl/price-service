@@ -6,6 +6,7 @@ import apiRoutes from './routes';
 import { errorHandler } from './middleware/error.middleware';
 import { authenticate } from './middleware/auth.middleware';
 import authRoutes from './modules/auth/auth.routes';
+import publicRoutes from './modules/public/public.routes';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -22,6 +23,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/public', publicRoutes);
 app.use('/api', authenticate, apiRoutes);
 app.use('/reports/files', express.static(reportsDir));
 

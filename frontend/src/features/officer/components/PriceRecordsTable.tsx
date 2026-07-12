@@ -30,7 +30,7 @@ export default function PriceRecordsTable({
     <div className="rounded-3xl border border-outline-variant bg-white p-5 data-card-shadow md:p-6">
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-h3-desktop text-h3-desktop text-on-surface">Recent Price Records</h2>
+          <h2 className="font-h3-desktop text-h3-desktop text-on-surface">Price Records</h2>
           <p className="text-body-xs text-on-surface-variant">
             Review the latest submissions and compliance status.
           </p>

@@ -6,6 +6,7 @@ const report_controller_1 = require("./report.controller");
 const router = (0, express_1.Router)();
 router.post('/', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.createReport));
 router.get('/', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.getReports));
+router.delete('/', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.deleteAllReports));
 router.get('/:id', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.getReportById));
 router.put('/:id', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.updateReport));
 router.delete('/:id', (0, asyncHandler_1.asyncHandler)(report_controller_1.reportController.deleteReport));

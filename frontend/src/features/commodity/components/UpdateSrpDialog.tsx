@@ -74,7 +74,7 @@ export default function UpdateSrpDialog({
       <div className="w-full max-w-xl rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-h3-desktop font-semibold text-on-surface">Update SRP</h2>
+            <h2 className="text-h3-desktop font-semibold text-on-surface">Update Commodity SRP</h2>
             <p className="mt-2 text-body-sm text-on-surface-variant">
               Provide the latest suggested retail price for {commodityName ?? "this commodity"}.
             </p>

@@ -15,8 +15,7 @@ import type {
 } from "@/features/officer/price-records.types";
 
 const FILTERS = [
-  { id: "all", label: "All Records" },
-  { id: "above", label: "Above SRP" },
+  { id: "all", label: "All Price Records" },
   { id: "compliant", label: "Compliant" },
 ];
 

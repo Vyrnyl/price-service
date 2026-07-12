@@ -11,6 +11,7 @@ const routes_1 = __importDefault(require("./routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const auth_middleware_1 = require("./middleware/auth.middleware");
 const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
+const public_routes_1 = __importDefault(require("./modules/public/public.routes"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
 const reportsDir = path_1.default.resolve(process.cwd(), 'reports');
@@ -22,6 +23,7 @@ app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/public', public_routes_1.default);
 app.use('/api', auth_middleware_1.authenticate, routes_1.default);
 app.use('/reports/files', express_1.default.static(reportsDir));
 app.get('/', (_req, res) => {

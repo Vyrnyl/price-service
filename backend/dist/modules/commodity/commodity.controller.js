@@ -7,8 +7,15 @@ exports.commodityController = void 0;
 const AppError_1 = __importDefault(require("../../utils/AppError"));
 const commodity_service_1 = require("./commodity.service");
 const commodity_schema_1 = require("./commodity.schema");
+function requireAdmin(user) {
+    if (!user || user.role !== 'ADMIN') {
+        throw new AppError_1.default('Forbidden', 403);
+    }
+}
 exports.commodityController = {
     createCommodity: async (req, res) => {
+        const authUser = req.user;
+        requireAdmin(authUser);
         const validated = commodity_schema_1.createCommoditySchema.parse(req.body);
         const commodity = await commodity_service_1.commodityService.createCommodity(validated);
         res.status(201).json({ status: 'success', data: commodity });
@@ -26,12 +33,16 @@ exports.commodityController = {
         res.json({ status: 'success', data: commodity });
     },
     updateCommodity: async (req, res) => {
+        const authUser = req.user;
+        requireAdmin(authUser);
         const { id } = commodity_schema_1.commodityIdParamSchema.parse(req.params);
         const data = commodity_schema_1.updateCommoditySchema.parse(req.body);
         const updatedCommodity = await commodity_service_1.commodityService.updateCommodity(id, data);
         res.json({ status: 'success', data: updatedCommodity });
     },
     deleteCommodity: async (req, res) => {
+        const authUser = req.user;
+        requireAdmin(authUser);
         const { id } = commodity_schema_1.commodityIdParamSchema.parse(req.params);
         await commodity_service_1.commodityService.deleteCommodity(id);
         res.status(204).send();

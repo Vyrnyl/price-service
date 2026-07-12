@@ -4,7 +4,7 @@ exports.reportRepository = void 0;
 const prisma_1 = require("../../prisma");
 exports.reportRepository = {
     create: (data, userId) => {
-        const { format, commodityGroup, ...rest } = data;
+        const { format, commodityGroup, storeId, ...rest } = data;
         return prisma_1.prisma.report.create({
             data: {
                 ...rest,
@@ -20,8 +20,9 @@ exports.reportRepository = {
         where: { id },
         include: { user: true },
     }),
+    deleteAll: () => prisma_1.prisma.report.deleteMany(),
     update: (id, data) => {
-        const { format, commodityGroup, ...rest } = data;
+        const { format, commodityGroup, storeId, ...rest } = data;
         const updateData = {
             ...rest,
         };

@@ -8,4 +8,5 @@ exports.reportService = {
     getReportById: (id) => report_repository_1.reportRepository.findById(id),
     updateReport: (id, data) => report_repository_1.reportRepository.update(id, data),
     deleteReport: (id) => report_repository_1.reportRepository.delete(id),
+    deleteAllReports: () => report_repository_1.reportRepository.deleteAll(),
 };

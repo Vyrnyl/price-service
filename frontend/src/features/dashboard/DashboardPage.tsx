@@ -9,18 +9,20 @@ import HeroSection from "./HeroSection";
 import SummaryStats from "./SummaryStats";
 import TopCommoditiesGrid from "./TopCommoditiesGrid";
 
-const recentTopCommodities = [
+const recentSrpUpdates = [
   {
     name: "Well-milled Rice",
-    price: "₱45.00",
+    currentPrice: "₱45.00",
+    srp: "SRP ₱48.00",
     updated: "Updated 2 min ago",
-    status: "Compliant",
+    status: "Aligned",
     icon: MdCheckCircle,
     statusClass: "bg-[#E8F5E9] text-[#2E7D32]",
   },
   {
     name: "Refined Sugar",
-    price: "₱95.00",
+    currentPrice: "₱95.00",
+    srp: "SRP ₱85.00",
     updated: "Updated 8 min ago",
     status: "Needs review",
     icon: MdWarningAmber,
@@ -28,7 +30,8 @@ const recentTopCommodities = [
   },
   {
     name: "Canned Sardines",
-    price: "₱22.50",
+    currentPrice: "₱22.50",
+    srp: "SRP ₱23.00",
     updated: "Updated 12 min ago",
     status: "Stable",
     icon: MdInfoOutline,
@@ -66,10 +69,10 @@ export default function DashboardPage() {
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h3 className="font-h3-desktop text-h3-desktop text-on-surface">
-                  Top commodities recent list
+                  Recent SRP updates
                 </h3>
                 <p className="mt-1 font-body-sm text-on-surface-variant">
-                  A quick look at the most recently updated commodities and their current market position.
+                  A quick look at the latest SRP-related commodity updates and their current status.
                 </p>
               </div>
               <button
@@ -81,7 +84,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {recentTopCommodities.map((item) => {
+              {recentSrpUpdates.map((item) => {
                 const Icon = item.icon;
 
                 return (
@@ -97,14 +100,15 @@ export default function DashboardPage() {
                         <p className="font-body-sm font-semibold text-on-surface">
                           {item.name}
                         </p>
-                        <p className="text-sm text-on-surface-variant">{item.updated}</p>
+                        <p className="text-sm text-on-surface-variant">{item.srp}</p>
                       </div>
                     </div>
 
                     <div className="text-right">
                       <p className="font-h3-desktop text-h3-desktop text-on-surface">
-                        {item.price}
+                        {item.currentPrice}
                       </p>
+                      <p className="mt-1 text-xs text-on-surface-variant">{item.updated}</p>
                       <span className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${item.statusClass}`}>
                         {item.status}
                       </span>

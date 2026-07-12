@@ -9,6 +9,7 @@ exports.createReportSchema = zod_1.z.object({
     period: zod_1.z.string().min(1, 'Period is required'),
     format: reportFormatEnum,
     commodityGroup: zod_1.z.string().optional(),
+    storeId: zod_1.z.string().uuid('Invalid store ID').optional(),
 });
 exports.updateReportSchema = zod_1.z.object({
     type: reportTypeEnum.optional(),
@@ -16,6 +17,7 @@ exports.updateReportSchema = zod_1.z.object({
     fileUrl: zod_1.z.string().min(1, 'URL is required').optional(),
     format: reportFormatEnum.optional(),
     commodityGroup: zod_1.z.string().optional(),
+    storeId: zod_1.z.string().uuid('Invalid store ID').optional(),
 });
 exports.reportIdParamSchema = zod_1.z.object({
     id: zod_1.z.string().uuid('Invalid report ID'),

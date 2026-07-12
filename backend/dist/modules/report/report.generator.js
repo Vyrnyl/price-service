@@ -29,24 +29,24 @@ function mapCommodityGroupFilter(group) {
     if (!group || group === 'ALL') {
         return undefined;
     }
-    const mapping = {
-        BASIC: 'Basic Necessities',
-        PRIME: 'Prime Commodities',
-        CONSTRUCTION: 'Construction Materials',
-    };
-    const category = mapping[group] ?? group;
     return {
         commodity: {
             is: {
                 category: {
-                    contains: category,
+                    equals: group,
                     mode: 'insensitive',
                 },
             },
         },
     };
 }
-async function loadReportRecords(period, commodityGroup) {
+function mapStoreFilter(storeId) {
+    if (!storeId) {
+        return undefined;
+    }
+    return { storeId };
+}
+async function loadReportRecords(period, commodityGroup, storeId) {
     const { startDate, endDate } = parsePeriod(period);
     return prisma_1.prisma.priceRecord.findMany({
         where: {
@@ -55,6 +55,7 @@ async function loadReportRecords(period, commodityGroup) {
                 lte: endDate,
             },
             ...mapCommodityGroupFilter(commodityGroup),
+            ...mapStoreFilter(storeId),
         },
         include: {
             commodity: true,
@@ -146,7 +147,7 @@ async function generateReportFile(payload) {
     ensureReportsDir();
     const filename = buildReportFilename(payload.type, payload.format);
     const reportPath = path_1.default.join(REPORTS_DIR, filename);
-    const records = await loadReportRecords(payload.period, payload.commodityGroup);
+    const records = await loadReportRecords(payload.period, payload.commodityGroup, payload.storeId);
     if (payload.format === 'PDF') {
         await generatePdf(reportPath, payload, records);
     }
