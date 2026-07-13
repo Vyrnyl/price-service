@@ -13,12 +13,21 @@ exports.forecastRepository = {
             include: { commodity: true },
         });
     },
+    createMany: (items) => prisma_1.prisma.forecast.createMany({
+        data: items,
+    }),
     findAll: () => prisma_1.prisma.forecast.findMany({
         include: { commodity: true },
+        orderBy: { forecastDate: 'asc' },
     }),
     findById: (id) => prisma_1.prisma.forecast.findUnique({
         where: { id },
         include: { commodity: true },
+    }),
+    findByCommodityId: (commodityId) => prisma_1.prisma.forecast.findMany({
+        where: { commodityId },
+        include: { commodity: true },
+        orderBy: { forecastDate: 'asc' },
     }),
     update: (id, data) => {
         const { commodityId, ...rest } = data;

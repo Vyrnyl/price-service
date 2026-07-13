@@ -4,6 +4,7 @@ import { forecastController } from './forecast.controller';
 
 const router = Router();
 
+router.post('/generate', asyncHandler(forecastController.generateForecast));
 router.post('/', asyncHandler(forecastController.createForecast));
 router.get('/', asyncHandler(forecastController.getForecasts));
 router.get('/:id', asyncHandler(forecastController.getForecastById));

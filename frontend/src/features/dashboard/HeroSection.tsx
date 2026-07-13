@@ -21,9 +21,6 @@ export default function HeroSection() {
               View Commodity Prices
               <FaArrowRight />
             </button>
-            <button className="rounded-xl border-2 border-outline-variant px-8 py-4 font-h3-desktop text-h3-desktop text-on-surface transition-all hover:bg-surface-container-low">
-              Explore Forecast
-            </button>
           </div>
         </div>
         <div className="w-full max-w-lg flex-1">

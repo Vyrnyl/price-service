@@ -15,15 +15,28 @@ export const forecastRepository = {
     });
   },
 
+  createMany: (items: CreateForecastInput[]) =>
+    prisma.forecast.createMany({
+      data: items,
+    }),
+
   findAll: () =>
     prisma.forecast.findMany({
       include: { commodity: true },
+      orderBy: { forecastDate: 'asc' },
     }),
 
   findById: (id: string) =>
     prisma.forecast.findUnique({
       where: { id },
       include: { commodity: true },
+    }),
+
+  findByCommodityId: (commodityId: string) =>
+    prisma.forecast.findMany({
+      where: { commodityId },
+      include: { commodity: true },
+      orderBy: { forecastDate: 'asc' },
     }),
 
   update: (id: string, data: UpdateForecastInput) => {

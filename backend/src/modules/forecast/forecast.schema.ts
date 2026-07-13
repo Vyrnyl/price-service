@@ -7,6 +7,11 @@ export const createForecastSchema = z.object({
   forecastDate: z.coerce.date(),
 });
 
+export const generateForecastSchema = z.object({
+  commodityId: z.string().uuid('Invalid commodity ID'),
+  horizon: z.coerce.number().int().min(1).max(12).default(3),
+});
+
 export const updateForecastSchema = createForecastSchema.partial();
 
 export const forecastIdParamSchema = z.object({
@@ -15,3 +20,4 @@ export const forecastIdParamSchema = z.object({
 
 export type CreateForecastInput = z.infer<typeof createForecastSchema>;
 export type UpdateForecastInput = z.infer<typeof updateForecastSchema>;
+export type GenerateForecastInput = z.infer<typeof generateForecastSchema>;

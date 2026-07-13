@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import AppError from '../../utils/AppError';
 import { forecastService } from './forecast.service';
-import { createForecastSchema, updateForecastSchema, forecastIdParamSchema } from './forecast.schema';
+import { createForecastSchema, updateForecastSchema, forecastIdParamSchema, generateForecastSchema } from './forecast.schema';
 
 export const forecastController = {
   createForecast: async (req: Request, res: Response) => {
@@ -9,6 +9,13 @@ export const forecastController = {
     const forecast = await forecastService.createForecast(validatedBody);
 
     res.status(201).json({ status: 'success', data: forecast });
+  },
+
+  generateForecast: async (req: Request, res: Response) => {
+    const validatedBody = generateForecastSchema.parse(req.body);
+    const forecasts = await forecastService.generateForecast(validatedBody);
+
+    res.status(201).json({ status: 'success', data: forecasts });
   },
 
   getForecasts: async (_req: Request, res: Response) => {

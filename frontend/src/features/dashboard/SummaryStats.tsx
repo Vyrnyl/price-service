@@ -1,34 +1,112 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import {
   MdOutlineCategory,
   MdOutlineStoreMallDirectory,
   MdOutlineUpdate,
 } from "react-icons/md";
+import { getPublicCommodities, type PublicCommodityItem } from "../commodity/api/commodity.api";
 
-const stats = [
-  {
-    icon: MdOutlineCategory,
-    label: "Total Commodities",
-    value: "120",
-    meta: "LATEST",
-    iconClass: "text-primary",
-  },
-  {
-    icon: MdOutlineStoreMallDirectory,
-    label: "Stores Monitored",
-    value: "65",
-    meta: "+2 THIS WEEK",
-    iconClass: "text-primary",
-  },
-  {
-    icon: MdOutlineUpdate,
-    label: "Price Updates Today",
-    value: "38",
-    meta: "LAST 24H",
-    iconClass: "text-primary",
-  },
-];
+interface SummaryState {
+  commodityCount: number;
+  storeCount: number;
+  updatesLast24Hours: number;
+}
+
+const initialSummaryState: SummaryState = {
+  commodityCount: 0,
+  storeCount: 0,
+  updatesLast24Hours: 0,
+};
+
+function formatValue(value: number) {
+  return value.toLocaleString("en-US");
+}
 
 export default function SummaryStats() {
+  const [summary, setSummary] = useState<SummaryState>(initialSummaryState);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSummary() {
+      try {
+        const commodities = await getPublicCommodities();
+
+        if (!isMounted) {
+          return;
+        }
+
+        const now = new Date();
+        const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        const stores = new Set<string>();
+        let updatesLast24Hours = 0;
+
+        commodities.forEach((commodity: PublicCommodityItem) => {
+          if (commodity.storeName) {
+            stores.add(commodity.storeName);
+          }
+
+          if (commodity.lastUpdatedAt) {
+            const updatedAt = new Date(commodity.lastUpdatedAt);
+            if (!Number.isNaN(updatedAt.getTime()) && updatedAt >= cutoff) {
+              updatesLast24Hours += 1;
+            }
+          }
+        });
+
+        setSummary({
+          commodityCount: commodities.length,
+          storeCount: stores.size,
+          updatesLast24Hours,
+        });
+      } catch {
+        if (isMounted) {
+          setSummary(initialSummaryState);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const stats = useMemo(
+    () => [
+      {
+        icon: MdOutlineCategory,
+        label: "Total Commodities",
+        value: isLoading ? "—" : formatValue(summary.commodityCount),
+        meta: "LATEST",
+        iconClass: "text-primary",
+      },
+      {
+        icon: MdOutlineStoreMallDirectory,
+        label: "Stores Monitored",
+        value: isLoading ? "—" : formatValue(summary.storeCount),
+        meta: "LIVE",
+        iconClass: "text-primary",
+      },
+      {
+        icon: MdOutlineUpdate,
+        label: "Price Updates Today",
+        value: isLoading ? "—" : formatValue(summary.updatesLast24Hours),
+        meta: "LAST 24H",
+        iconClass: "text-primary",
+      },
+    ],
+    [isLoading, summary.commodityCount, summary.storeCount, summary.updatesLast24Hours],
+  );
+
   return (
     <section className="bg-surface-container-low px-container-margin-mobile py-12 md:px-container-margin-desktop">
       <div className="mx-auto max-w-6xl">

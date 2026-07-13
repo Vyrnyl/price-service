@@ -13,6 +13,11 @@ exports.forecastController = {
         const forecast = await forecast_service_1.forecastService.createForecast(validatedBody);
         res.status(201).json({ status: 'success', data: forecast });
     },
+    generateForecast: async (req, res) => {
+        const validatedBody = forecast_schema_1.generateForecastSchema.parse(req.body);
+        const forecasts = await forecast_service_1.forecastService.generateForecast(validatedBody);
+        res.status(201).json({ status: 'success', data: forecasts });
+    },
     getForecasts: async (_req, res) => {
         const forecasts = await forecast_service_1.forecastService.getForecasts();
         res.json({ status: 'success', data: forecasts });
