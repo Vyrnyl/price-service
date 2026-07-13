@@ -91,8 +91,10 @@ function mapBackendPriceRecord(record: any): PriceRecord {
 
 export default function PriceRecordsPage({
   canCreateRecord = true,
+  hideActions = false,
 }: {
   canCreateRecord?: boolean;
+  hideActions?: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -321,7 +323,11 @@ export default function PriceRecordsPage({
             </div>
           ) : null}
 
-          <PriceRecordsTable records={filteredRecords} onEdit={handleEditRecord} />
+          <PriceRecordsTable
+            records={filteredRecords}
+            onEdit={handleEditRecord}
+            hideActions={hideActions}
+          />
         </div>
       </section>
     </main>

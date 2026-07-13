@@ -6,18 +6,29 @@ interface PriceRecordsTableProps {
   onEdit?: (record: PriceRecord) => void;
   hideActions?: boolean;
   hideOfficerColumn?: boolean;
+  hideCommodityColumn?: boolean;
+  compact?: boolean;
+  headerHighlight?: string;
 }
 
-function getStatusClasses(status: string) {
+function getStatusClasses(status: string, compact = false) {
+  const baseClasses = compact
+    ? "rounded-full bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 text-[10px] font-semibold"
+    : "rounded-full bg-secondary-fixed text-on-secondary-fixed px-3 py-1 text-[12px] font-semibold";
+
   if (status === "Compliant") {
-    return "rounded-full bg-secondary-fixed text-on-secondary-fixed px-3 py-1 text-[12px] font-semibold";
+    return baseClasses;
   }
 
   if (status === "Above SRP") {
-    return "rounded-full bg-error-container text-error px-3 py-1 text-[12px] font-semibold";
+    return compact
+      ? "rounded-full bg-error-container text-error px-2 py-0.5 text-[10px] font-semibold"
+      : "rounded-full bg-error-container text-error px-3 py-1 text-[12px] font-semibold";
   }
 
-  return "rounded-full bg-surface-container-highest text-on-surface-variant px-3 py-1 text-[12px] font-semibold";
+  return compact
+    ? "rounded-full bg-surface-container-highest text-on-surface-variant px-2 py-0.5 text-[10px] font-semibold"
+    : "rounded-full bg-surface-container-highest text-on-surface-variant px-3 py-1 text-[12px] font-semibold";
 }
 
 export default function PriceRecordsTable({
@@ -25,73 +36,87 @@ export default function PriceRecordsTable({
   onEdit,
   hideActions = false,
   hideOfficerColumn = false,
+  hideCommodityColumn = false,
+  compact = false,
+  headerHighlight,
 }: PriceRecordsTableProps) {
   return (
-    <div className="rounded-3xl border border-outline-variant bg-white p-5 data-card-shadow md:p-6">
-      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+    <div className={`rounded-3xl border border-outline-variant bg-white ${compact ? "p-3 md:p-4" : "p-5 md:p-6"} data-card-shadow`}>
+      <div className={`mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${compact ? "mb-3" : "mb-5"}`}>
         <div>
-          <h2 className="font-h3-desktop text-h3-desktop text-on-surface">Price Records</h2>
-          <p className="text-body-xs text-on-surface-variant">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className={`${compact ? "text-sm" : "font-h3-desktop text-h3-desktop"} text-on-surface`}>Price Records</h2>
+            {headerHighlight ? (
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary sm:text-xs">
+                {headerHighlight}
+              </span>
+            ) : null}
+          </div>
+          <p className={`${compact ? "text-[11px]" : "text-body-xs"} text-on-surface-variant`}>
             Review the latest submissions and compliance status.
           </p>
         </div>
-        <span className="inline-flex items-center rounded-full bg-surface-container-low py-1.5 px-2.5 text-body-xs text-on-surface-variant">
+        <span className={`inline-flex items-center rounded-full bg-surface-container-low py-1 px-2 text-[11px] text-on-surface-variant ${compact ? "text-[11px]" : "text-body-xs"}`}>
           {records.length} records shown
         </span>
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full table-fixed text-left">
+        <table className="min-w-full table-fixed text-center">
           <thead>
             <tr className="border-b border-outline-variant/30">
-              <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Date & Time</th>
-              <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Store & Location</th>
-              <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Commodity</th>
-              <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Price & Status</th>
+              <th className={`${compact ? "pb-1 text-[8px]" : "pb-2 text-[9px]"} font-label-caps uppercase tracking-[0.24em] text-outline`}>Date & Time</th>
+              <th className={`${compact ? "pb-1 text-[8px]" : "pb-2 text-[9px]"} font-label-caps uppercase tracking-[0.24em] text-outline`}>Store & Location</th>
+              {!hideCommodityColumn ? (
+                <th className={`${compact ? "pb-1 text-[8px]" : "pb-2 text-[9px]"} font-label-caps uppercase tracking-[0.24em] text-outline`}>Commodity</th>
+              ) : null}
+              <th className={`${compact ? "pb-1 text-[8px]" : "pb-2 text-[9px]"} font-label-caps uppercase tracking-[0.24em] text-outline`}>Price & Status</th>
               {!hideOfficerColumn ? (
-                <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Officer</th>
+                <th className={`${compact ? "pb-1 text-[8px]" : "pb-2 text-[9px]"} font-label-caps uppercase tracking-[0.24em] text-outline`}>Officer</th>
               ) : null}
               {!hideActions ? (
-                <th className="pb-2 text-[9px] font-label-caps uppercase tracking-[0.24em] text-outline">Action</th>
+                <th className={`${compact ? "pb-1 text-[8px]" : "pb-2 text-[9px]"} font-label-caps uppercase tracking-[0.24em] text-outline`}>Action</th>
               ) : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/20">
             {records.map((record) => (
               <tr key={record.id}>
-                <td className="py-3 align-top">
-                  <div className="font-semibold text-on-surface text-sm">{record.date}</div>
-                  <div className="text-body-xs text-on-surface-variant">{record.time}</div>
+                <td className={`${compact ? "py-2" : "py-3"} align-top`}>
+                  <div className={`font-semibold text-on-surface ${compact ? "text-xs" : "text-sm"}`}>{record.date}</div>
+                  <div className={`${compact ? "text-[10px]" : "text-body-xs"} text-on-surface-variant`}>{record.time}</div>
                 </td>
-                <td className="py-3 align-top">
-                  <div className="font-semibold text-on-surface text-sm">{record.store}</div>
-                  <div className="text-body-xs text-on-surface-variant">{record.location}</div>
+                <td className={`${compact ? "py-2" : "py-3"} align-top`}>
+                  <div className={`font-semibold text-on-surface ${compact ? "text-xs" : "text-sm"}`}>{record.store}</div>
+                  <div className={`${compact ? "text-[10px]" : "text-body-xs"} text-on-surface-variant`}>{record.location}</div>
                 </td>
-                <td className="py-3 align-top">
-                  <div className="font-semibold text-on-surface text-sm">{record.commodity}</div>
-                  <div className="text-body-xs text-on-surface-variant">{record.commodityDetails}</div>
-                </td>
-                <td className="py-3 align-top">
-                  <div className="font-semibold text-on-surface text-sm">{record.price}</div>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span className={getStatusClasses(record.status)}>{record.status}</span>
+                {!hideCommodityColumn ? (
+                  <td className={`${compact ? "py-2" : "py-3"} align-top`}>
+                    <div className={`font-semibold text-on-surface ${compact ? "text-xs" : "text-sm"}`}>{record.commodity}</div>
+                    <div className={`${compact ? "text-[10px]" : "text-body-xs"} text-on-surface-variant`}>{record.commodityDetails}</div>
+                  </td>
+                ) : null}
+                <td className={`${compact ? "py-2" : "py-3"} align-top`}>
+                  <div className={`font-semibold text-on-surface ${compact ? "text-xs" : "text-sm"}`}>{record.price}</div>
+                  <div className={`mt-1 flex flex-wrap items-center justify-center gap-2 ${compact ? "gap-1" : "gap-2"}`}>
+                    <span className={getStatusClasses(record.status, compact)}>{record.status}</span>
                     {record.srp ? (
-                      <span className="text-body-xs text-on-surface-variant">({record.srp})</span>
+                      <span className={`${compact ? "text-[10px]" : "text-body-xs"} text-on-surface-variant`}>({record.srp})</span>
                     ) : null}
                   </div>
                 </td>
                 {!hideOfficerColumn ? (
-                  <td className="py-3 align-top">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-fixed text-primary font-semibold text-sm">
+                  <td className={`${compact ? "py-2" : "py-3"} align-top`}>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className={`flex ${compact ? "h-7 w-7 text-[10px]" : "h-9 w-9 text-sm"} items-center justify-center rounded-full bg-primary-fixed text-primary font-semibold`}>
                         {record.officerInitials}
                       </div>
-                      <span className="text-body-xs text-on-surface">{record.officerName}</span>
+                      <span className={`${compact ? "text-[10px]" : "text-body-xs"} text-on-surface`}>{record.officerName}</span>
                     </div>
                   </td>
                 ) : null}
                 {!hideActions ? (
-                  <td className="py-3 align-top">
+                  <td className={`${compact ? "py-2" : "py-3"} align-top`}>
                     <button
                       type="button"
                       onClick={() => onEdit?.(record)}

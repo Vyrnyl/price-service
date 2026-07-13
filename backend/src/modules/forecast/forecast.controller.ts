@@ -17,7 +17,7 @@ export const forecastController = {
 
     res.status(201).json({ status: 'success', data: forecasts });
   },
-
+  
   getForecasts: async (_req: Request, res: Response) => {
     const forecasts = await forecastService.getForecasts();
 

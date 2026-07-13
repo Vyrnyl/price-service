@@ -21,8 +21,9 @@ exports.priceRecordController = {
         const priceRecord = await price_record_service_1.priceRecordService.createPriceRecord(payload);
         res.status(201).json({ status: 'success', data: priceRecord });
     },
-    getPriceRecords: async (_req, res) => {
-        const priceRecords = await price_record_service_1.priceRecordService.getPriceRecords();
+    getPriceRecords: async (req, res) => {
+        const authUser = req.user;
+        const priceRecords = await price_record_service_1.priceRecordService.getPriceRecords(authUser);
         res.json({ status: 'success', data: priceRecords });
     },
     getPriceRecordById: async (req, res) => {

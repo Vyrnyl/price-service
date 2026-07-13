@@ -1,0 +1,64 @@
+import { MdClose } from "react-icons/md";
+
+type ForecastDetailModalProps = {
+  selectedCommodity: string;
+  onClose: () => void;
+};
+
+export function ForecastDetailModal({ selectedCommodity, onClose }: ForecastDetailModalProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
+      <div className="w-full max-w-3xl rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-2xl">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Detailed forecast report</p>
+            <h3 className="mt-1 text-2xl font-semibold text-on-surface">{selectedCommodity} forecast overview</h3>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Insights for the selected commodity, including current price, expected movement, and the statistical basis behind the projection.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="rounded-full bg-surface-container-high p-2 text-on-surface-variant transition-colors hover:bg-surface-container-highest"
+            onClick={onClose}
+          >
+            <MdClose size={20} />
+          </button>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="rounded-2xl border border-outline-variant bg-surface-container-high p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Current price</p>
+            <p className="mt-2 text-3xl font-semibold text-on-surface">₱55.00</p>
+            <p className="mt-1 text-sm text-on-surface-variant">Compared with the SRP benchmark of ₱54.00</p>
+          </div>
+          <div className="rounded-2xl border border-outline-variant bg-surface-container-high p-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Forecast window</p>
+            <p className="mt-2 text-3xl font-semibold text-on-surface">+₱2.00</p>
+            <p className="mt-1 text-sm text-on-surface-variant">Expected over the next month</p>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-outline-variant bg-surface-container p-4">
+          <p className="text-sm font-semibold text-on-surface">Why this forecast matters</p>
+          <p className="mt-2 text-sm leading-7 text-on-surface-variant">
+            The outlook is based on the latest price pattern, seasonality, and recent market volatility. The ARIMA model continues to update as new price points arrive, making this view useful for short-term monitoring and planning.
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-3">
+          {[
+            { label: "Confidence", value: "High" },
+            { label: "Range", value: "₱53.00 - ₱57.00" },
+            { label: "Model", value: "ARIMA" },
+          ].map((item) => (
+            <div key={item.label} className="rounded-full border border-outline-variant bg-surface-container-high px-3 py-2 text-sm">
+              <span className="text-on-surface-variant">{item.label}: </span>
+              <span className="font-semibold text-on-surface">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

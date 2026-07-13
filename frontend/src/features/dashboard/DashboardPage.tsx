@@ -156,7 +156,7 @@ export default function DashboardPage() {
             const rightTime = right.lastUpdatedAt ? new Date(right.lastUpdatedAt).getTime() : 0;
             return rightTime - leftTime;
           })
-          .slice(0, 3)
+          .slice(0, 5)
           .map((commodity: PublicCommodityItem) => ({
             name: commodity.name,
             srp: formatCurrency(commodity.srpPrice),
@@ -200,12 +200,6 @@ export default function DashboardPage() {
                   A quick look at the latest SRP-related commodity updates and their current status.
                 </p>
               </div>
-              <button
-                type="button"
-                className="rounded-full border border-outline-variant px-4 py-2 font-label-caps text-label-caps text-on-surface-variant"
-              >
-                View more
-              </button>
             </div>
 
             <div className="space-y-3">

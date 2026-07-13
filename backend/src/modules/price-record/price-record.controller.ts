@@ -22,8 +22,9 @@ export const priceRecordController = {
     res.status(201).json({ status: 'success', data: priceRecord });
   },
 
-  getPriceRecords: async (_req: Request, res: Response) => {
-    const priceRecords = await priceRecordService.getPriceRecords();
+  getPriceRecords: async (req: Request, res: Response) => {
+    const authUser = req.user as AuthUser | undefined;
+    const priceRecords = await priceRecordService.getPriceRecords(authUser);
 
     res.json({ status: 'success', data: priceRecords });
   },

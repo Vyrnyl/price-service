@@ -1,6 +1,8 @@
 import { prisma } from '../../prisma';
 import type { Prisma } from '@prisma/client';
 import type { CreatePriceRecordInput, UpdatePriceRecordInput } from './price-record.schema';
+import type { AuthUser } from '../../../types/express';
+import { resolvePriceRecordScope } from './price-record.scope';
 
 export type CreatePriceRecordWithUserInput = CreatePriceRecordInput & {
   userId: string;
@@ -21,10 +23,14 @@ export const priceRecordRepository = {
     });
   },
 
-  findAll: () =>
-    prisma.priceRecord.findMany({
+  findAll: (authUser?: AuthUser) => {
+    const scope = resolvePriceRecordScope(authUser);
+
+    return prisma.priceRecord.findMany({
+      where: scope,
       include: { commodity: true, store: true, user: true },
-    }),
+    });
+  },
 
   findById: (id: string) =>
     prisma.priceRecord.findUnique({

@@ -10,6 +10,17 @@ export interface CommodityItem {
   srps?: SrpItem[];
 }
 
+export interface PublicCommodityPriceRecord {
+  id: string;
+  price: number | null;
+  dateAndTime: string | null;
+  status: string | null;
+  srpPrice: number | null;
+  storeName: string | null;
+  storeLocation: string | null;
+  complianceStatus: string;
+}
+
 export interface PublicCommodityItem {
   id: string;
   name: string;
@@ -21,6 +32,7 @@ export interface PublicCommodityItem {
   lastUpdatedAt: string | null;
   storeName: string | null;
   storeLocation: string | null;
+  priceRecords: PublicCommodityPriceRecord[];
 }
 
 export interface CommodityDetailsItem extends CommodityItem {

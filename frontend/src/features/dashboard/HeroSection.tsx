@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FaArrowRight } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 
@@ -17,10 +18,13 @@ export default function HeroSection() {
             Empowering consumers and retailers in Catanduanes with transparent Suggested Retail Price (SRP) monitoring and market trend forecasting.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
-            <button className="flex items-center gap-2 rounded-xl bg-primary px-8 py-4 font-h3-desktop text-h3-desktop text-on-primary transition-all hover:shadow-lg active:scale-95">
+            <Link
+              href="/commodity-list"
+              className="flex items-center gap-2 rounded-xl bg-primary px-8 py-4 font-h3-desktop text-h3-desktop text-on-primary transition-all hover:shadow-lg active:scale-95"
+            >
               View Commodity Prices
               <FaArrowRight />
-            </button>
+            </Link>
           </div>
         </div>
         <div className="w-full max-w-lg flex-1">
