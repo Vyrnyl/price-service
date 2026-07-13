@@ -6,10 +6,39 @@ type PriceInsight = {
 
 type ForecastSummaryPanelProps = {
   activeInsight: PriceInsight;
+  currentPrice: number | null;
+  projectedPrice: number | null;
+  confidence: number | null;
   onOpenDetail: () => void;
 };
 
-export function ForecastSummaryPanel({ activeInsight, onOpenDetail }: ForecastSummaryPanelProps) {
+function formatCurrency(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) {
+    return "—";
+  }
+
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatConfidence(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) {
+    return "—";
+  }
+
+  return `${Math.round(value * 100)}%`;
+}
+
+export function ForecastSummaryPanel({
+  activeInsight,
+  currentPrice,
+  projectedPrice,
+  confidence,
+  onOpenDetail,
+}: ForecastSummaryPanelProps) {
   return (
     <section className="flex flex-col gap-6">
       <div className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
@@ -18,16 +47,16 @@ export function ForecastSummaryPanel({ activeInsight, onOpenDetail }: ForecastSu
             <MdBolt size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Forecast outlook</p>
-            <h3 className="mt-1 text-xl font-semibold text-on-surface">Next month snapshot</h3>
+            <p className="text-[11px] font-semibold uppercase tracking-[.24em] text-outline">Forecast outlook</p>
+            <h3 className="mt-1 text-xl font-semibold text-on-surface">Next week snapshot</h3>
           </div>
         </div>
 
         <div className="mt-5 space-y-3">
           {[
-            { label: "Current price", value: "₱55.00" },
-            { label: "Projected", value: "₱57.00" },
-            { label: "Confidence", value: "95%" },
+            { label: "Current price", value: formatCurrency(currentPrice) },
+            { label: "Projected", value: formatCurrency(projectedPrice) },
+            { label: "Confidence", value: formatConfidence(confidence) },
           ].map((item) => (
             <div key={item.label} className="flex items-center justify-between rounded-2xl bg-surface-container px-3 py-2.5">
               <span className="text-sm text-on-surface-variant">{item.label}</span>

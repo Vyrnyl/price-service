@@ -14,7 +14,7 @@ type PriceAnalysisSummaryCardsProps = {
 
 export function PriceAnalysisSummaryCards({ cards }: PriceAnalysisSummaryCardsProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {cards.map((card) => {
         const Icon = card.icon;
 

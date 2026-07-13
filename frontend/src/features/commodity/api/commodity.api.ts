@@ -35,6 +35,15 @@ export interface PublicCommodityItem {
   priceRecords: PublicCommodityPriceRecord[];
 }
 
+export interface PublicForecastItem {
+  id: string;
+  commodityId: string;
+  predictedPrice: number | null;
+  confidence: number;
+  forecastDate: string;
+  createdAt: string;
+}
+
 export interface CommodityDetailsItem extends CommodityItem {
   srps?: SrpItem[];
 }
@@ -70,9 +79,18 @@ export async function getCommodities() {
 }
 
 export async function getPublicCommodities() {
-  const response = await apiFetch<{ status: string; data: PublicCommodityItem[] }>("/api/public/commodities", {
-    method: "GET",
-    credentials: "omit",
+  const response = await apiFetch<{ status: string; data: PublicCommodityItem[] }>('/api/public/commodities', {
+    method: 'GET',
+    credentials: 'omit',
+  });
+
+  return response.data;
+}
+
+export async function getPublicForecastByCommodityId(commodityId: string) {
+  const response = await apiFetch<{ status: string; data: PublicForecastItem[] }>(`/api/public/forecasts/${commodityId}`, {
+    method: 'GET',
+    credentials: 'omit',
   });
 
   return response.data;

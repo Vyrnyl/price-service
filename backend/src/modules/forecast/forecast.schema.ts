@@ -9,7 +9,7 @@ export const createForecastSchema = z.object({
 
 export const generateForecastSchema = z.object({
   commodityId: z.string().uuid('Invalid commodity ID'),
-  horizon: z.coerce.number().int().min(1).max(12).default(3),
+  horizon: z.coerce.number().int().min(1).max(12).default(7),
 });
 
 export const updateForecastSchema = createForecastSchema.partial();

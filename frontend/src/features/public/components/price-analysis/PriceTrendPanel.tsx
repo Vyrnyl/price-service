@@ -1,4 +1,24 @@
-type PriceRange = "1M" | "6M" | "1Y";
+"use client";
+
+import {
+  CategoryScale,
+  Chart as ChartJS,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Tooltip,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+type PriceRange = "Week" | "Month";
+
+export type TrendPoint = {
+  date: string | null;
+  price: number | null;
+  label: string;
+  x: number;
+  y: number;
+};
 
 type PriceInsight = {
   title: string;
@@ -13,15 +33,120 @@ type PriceTrendPanelProps = {
   activeInsight: PriceInsight;
   activeRange: PriceRange;
   rangeOptions: readonly PriceRange[];
+  points: TrendPoint[];
+  selectedPointIndex: number | null;
   onRangeChange: (range: PriceRange) => void;
+  onPointSelect: (index: number) => void;
 };
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
+
+function formatCurrency(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) {
+    return "—";
+  }
+
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export function PriceTrendPanel({
   activeInsight,
   activeRange,
   rangeOptions,
+  points,
+  selectedPointIndex,
   onRangeChange,
+  onPointSelect,
 }: PriceTrendPanelProps) {
+  const selectedPoint =
+    selectedPointIndex != null && points[selectedPointIndex]
+      ? points[selectedPointIndex]
+      : points[points.length - 1] ?? null;
+
+  const selectedDateLabel = selectedPoint?.date
+    ? new Date(selectedPoint.date).toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "No date available";
+
+  const chartData = {
+    labels: points.map((point) => {
+      if (!point.date) {
+        return point.label;
+      }
+
+      return new Date(point.date).toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+      });
+    }),
+    datasets: [
+      {
+        label: activeInsight.title,
+        data: points.map((point) => point.price),
+        borderColor: "#004ac6",
+        backgroundColor: "rgba(0, 74, 198, 0.16)",
+        borderWidth: 3,
+        tension: 0.35,
+        pointRadius: points.map((_, index) => (selectedPointIndex === index ? 6 : 4)),
+        pointHoverRadius: 6,
+        pointBackgroundColor: points.map((_, index) => (selectedPointIndex === index ? "#e8f1ff" : "#ffffff")),
+        pointBorderColor: "#004ac6",
+        pointBorderWidth: points.map((_, index) => (selectedPointIndex === index ? 3 : 2)),
+        fill: true,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: "index" as const,
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: { parsed: { y: number | null } }) =>
+            formatCurrency(context.parsed.y),
+        },
+      },
+    },
+    scales: {
+      x: {
+        display: true,
+        ticks: {
+          color: "#6b7280",
+          maxTicksLimit: 6,
+        },
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        display: false,
+        grid: {
+          display: false,
+        },
+      },
+    },
+    onClick: (_: unknown, elements: Array<{ index: number }>) => {
+      if (elements[0]?.index != null) {
+        onPointSelect(elements[0].index);
+      }
+    },
+  };
+
   return (
     <section className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
       <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -58,29 +183,14 @@ export function PriceTrendPanel({
             ))}
           </div>
 
-          <svg className="h-full w-full" viewBox="0 0 1000 320" preserveAspectRatio="none">
-            <path
-              d="M 0,225 L 200,220 L 400,215 L 600,200 L 800,180 L 1000,170"
-              fill="none"
-              stroke="#8E97A8"
-              strokeDasharray="8 6"
-              strokeWidth="2"
-            />
-            <path
-              d={activeInsight.path}
-              fill="none"
-              stroke="#004ac6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="4"
-            />
-            <circle cx="760" cy="180" r="6" fill="#004ac6" stroke="#ffffff" strokeWidth="2" />
-          </svg>
+          <div className="relative h-full w-full">
+            <Line data={chartData} options={chartOptions} />
+          </div>
 
           <div className="absolute left-[74%] top-4 z-10 rounded-2xl border border-outline-variant bg-surface-container-lowest p-3 shadow-sm">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-outline">Latest point</p>
-            <p className="text-xl font-semibold text-on-surface">{activeInsight.price}</p>
-            <p className="text-sm text-success">{activeInsight.change}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-outline">Selected point</p>
+            <p className="text-xl font-semibold text-on-surface">{selectedPoint ? formatCurrency(selectedPoint.price) : activeInsight.price}</p>
+            <p className="text-sm text-success">{selectedDateLabel}</p>
           </div>
         </div>
 

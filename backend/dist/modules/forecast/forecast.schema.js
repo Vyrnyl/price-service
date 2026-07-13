@@ -10,7 +10,7 @@ exports.createForecastSchema = zod_1.z.object({
 });
 exports.generateForecastSchema = zod_1.z.object({
     commodityId: zod_1.z.string().uuid('Invalid commodity ID'),
-    horizon: zod_1.z.coerce.number().int().min(1).max(12).default(3),
+    horizon: zod_1.z.coerce.number().int().min(1).max(12).default(7),
 });
 exports.updateForecastSchema = exports.createForecastSchema.partial();
 exports.forecastIdParamSchema = zod_1.z.object({

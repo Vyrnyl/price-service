@@ -1,7 +1,25 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../prisma';
+import AppError from '../../utils/AppError';
+import { forecastService } from '../forecast/forecast.service';
 
 export const publicController = {
+  getPublicForecastByCommodityId: async (req: Request, res: Response) => {
+    const { commodityId } = req.params;
+
+    try {
+      const forecasts = await forecastService.generateForecast({ commodityId, horizon: 7 });
+      res.json({ status: 'success', data: forecasts });
+    } catch (error) {
+      if (error instanceof AppError) {
+        res.json({ status: 'success', data: [] });
+        return;
+      }
+
+      throw error;
+    }
+  },
+
   getPublicCommodities: async (_req: Request, res: Response) => {
     const commodities = await prisma.commodity.findMany({
       orderBy: {
@@ -31,7 +49,12 @@ export const publicController = {
     const payload = commodities.map((commodity) => {
       const latestSrp = commodity.srps[0];
       const latestPriceRecord = commodity.prices[0];
-      const currentPrice = latestPriceRecord?.price != null ? Number(latestPriceRecord.price) : null;
+      const priceValues = commodity.prices
+        .map((priceRecord) => (priceRecord.price != null ? Number(priceRecord.price) : null))
+        .filter((price): price is number => price != null);
+      const currentPrice = priceValues.length > 0
+        ? priceValues.reduce((sum, price) => sum + price, 0) / priceValues.length
+        : null;
       const srpPrice = latestSrp?.price != null ? Number(latestSrp.price) : null;
 
       let complianceStatus = 'Unknown';

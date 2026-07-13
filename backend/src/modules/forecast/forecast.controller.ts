@@ -10,7 +10,7 @@ export const forecastController = {
 
     res.status(201).json({ status: 'success', data: forecast });
   },
-
+  
   generateForecast: async (req: Request, res: Response) => {
     const validatedBody = generateForecastSchema.parse(req.body);
     const forecasts = await forecastService.generateForecast(validatedBody);

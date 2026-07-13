@@ -25,10 +25,32 @@ function calculateConfidence(series: number[], horizon: number, index: number): 
   return Number(Math.min(0.99, Math.max(0.2, stabilityScore)).toFixed(2));
 }
 
+export function buildForecastItems({
+  commodityId,
+  predictedPrices,
+  baseDate,
+  series,
+  horizon,
+}: {
+  commodityId: string;
+  predictedPrices: number[];
+  baseDate: Date;
+  series: number[];
+  horizon: number;
+}): CreateForecastInput[] {
+  return predictedPrices.map((predictedPrice, index) => ({
+    commodityId,
+    predictedPrice: toDecimal(predictedPrice),
+    confidence: calculateConfidence(series, horizon, index),
+    forecastDate: new Date(baseDate.getTime() + (index + 1) * 24 * 60 * 60 * 1000),
+  }));
+}
+
 export const forecastService = {
   createForecast: (data: CreateForecastInput) => forecastRepository.create(data),
   getForecasts: () => forecastRepository.findAll(),
   getForecastById: (id: string) => forecastRepository.findById(id),
+  getForecastsByCommodityId: (commodityId: string) => forecastRepository.findByCommodityId(commodityId),
   updateForecast: (id: string, data: UpdateForecastInput) => forecastRepository.update(id, data),
   deleteForecast: (id: string) => forecastRepository.delete(id),
 
@@ -47,16 +69,17 @@ export const forecastService = {
     const predictedValues = forecastArima(series, horizon);
     const baseDate = priceRecords[priceRecords.length - 1]?.dateAndTime ?? new Date();
 
-    const forecastItems: CreateForecastInput[] = predictedValues.map((predictedPrice, index) => ({
+    const forecastItems = buildForecastItems({
       commodityId,
-      predictedPrice: toDecimal(predictedPrice),
-      confidence: calculateConfidence(series, horizon, index),
-      forecastDate: new Date(baseDate.getTime() + (index + 1) * 24 * 60 * 60 * 1000),
-    }));
+      predictedPrices: predictedValues,
+      baseDate,
+      series,
+      horizon,
+    });
 
     await prisma.forecast.deleteMany({ where: { commodityId } });
     await forecastRepository.createMany(forecastItems);
-
+    console.log('deleted old forecasts and created new forecasts for commodityId:', commodityId);
     return forecastRepository.findByCommodityId(commodityId);
   },
 };
