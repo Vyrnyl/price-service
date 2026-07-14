@@ -1,7 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import TopAppBar from "./TopAppBar";
 import NavigationDrawer from "./NavigationDrawer";
 import FooterSection from "./FooterSection";
-import MobileBottomNav from "./MobileBottomNav";
 
 export default function AppShell({
   children,
@@ -12,13 +14,35 @@ export default function AppShell({
   activePath: string;
   hideNavigation?: boolean;
 }) {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    // Close the mobile drawer when the active path changes.
+    // Schedule the state update asynchronously to avoid calling setState
+    // synchronously inside the effect body (ESLint: react-hooks/set-state-in-effect).
+    const t = setTimeout(() => setIsDrawerOpen(false), 0);
+    return () => clearTimeout(t);
+  }, [activePath]);
+
   return (
     <div className="flex min-h-screen flex-col">
-      <TopAppBar activePath={activePath} />
-      {!hideNavigation && <NavigationDrawer activePath={activePath} />}
-      <main className="flex-1">{children}</main>
+      <TopAppBar
+        activePath={activePath}
+        isMenuOpen={isDrawerOpen}
+        onMenuToggle={() => setIsDrawerOpen((prev) => !prev)}
+        showMenuButton={!hideNavigation}
+      />
+      {!hideNavigation && (
+        <NavigationDrawer
+          activePath={activePath}
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+        />
+      )}
+      <main className="flex-1 pb-24">
+        {children}
+      </main>
       <FooterSection />
-      <MobileBottomNav />
     </div>
   );
 }

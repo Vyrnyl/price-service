@@ -17,13 +17,13 @@ type UsersStatsSectionProps = {
 
 export default function UsersStatsSection({ stats }: UsersStatsSectionProps) {
   return (
-    <section className="flex flex-wrap gap-6">
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
           <div
             key={stat.label}
-            className="flex min-w-0 flex-1 flex-col rounded-xl border border-outline-variant bg-surface-container-lowest p-6 data-card-shadow"
+            className="flex min-w-0 flex-col rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm sm:p-6"
           >
             <div className="mb-4 flex items-start justify-between gap-3">
               <span className={`rounded-xl p-2 ${stat.accent}`}>

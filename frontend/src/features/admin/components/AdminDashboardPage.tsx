@@ -237,7 +237,11 @@ export default function AdminDashboardPage() {
                 Admin monitoring dashboard
               </h2>
               <p className="mt-1 font-body-lg text-on-surface-variant">
-                Here is the market overview for today, October 24, 2023.
+                Here is the market overview for today, {new Date().toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}.
               </p>
             </div>
           </div>

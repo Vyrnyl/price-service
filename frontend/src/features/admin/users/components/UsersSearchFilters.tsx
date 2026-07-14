@@ -21,7 +21,7 @@ export default function UsersSearchFilters({
   onActiveFilterChange,
 }: UsersSearchFiltersProps) {
   return (
-    <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 data-card-shadow lg:flex-row">
+    <div className="flex flex-col gap-4 rounded-2xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
       <div className="relative w-full lg:w-96">
         <MdOutlineSearch
           className="absolute left-3 top-1/2 -translate-y-1/2 text-outline"
@@ -35,8 +35,8 @@ export default function UsersSearchFilters({
           onChange={(event) => onSearchChange(event.target.value)}
         />
       </div>
-      <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 lg:w-auto lg:pb-0">
-        <span className="mr-2 whitespace-nowrap text-body-sm font-semibold text-on-surface">
+      <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
+        <span className="mr-1 whitespace-nowrap text-body-sm font-semibold text-on-surface">
           Filter by:
         </span>
         <button

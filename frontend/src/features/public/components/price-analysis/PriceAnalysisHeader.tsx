@@ -20,13 +20,13 @@ export function PriceAnalysisHeader({
   onSelectCommodity,
 }: PriceAnalysisHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm md:flex-row md:items-end md:justify-between">
+    <div className="flex flex-col gap-4 rounded-3xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm sm:p-6 md:flex-row md:items-end md:justify-between">
       <div className="max-w-2xl">
-        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary sm:text-[11px]">
           <MdBarChart size={14} />
           Public price analysis
         </div>
-        <h2 className="text-3xl font-semibold tracking-tight text-on-surface md:text-4xl">
+        <h2 className="text-2xl font-semibold tracking-tight text-on-surface sm:text-3xl md:text-4xl">
           Price trends and forecasts
         </h2>
         <p className="mt-2 text-sm text-on-surface-variant md:text-base">
@@ -34,10 +34,10 @@ export function PriceAnalysisHeader({
         </p>
       </div>
 
-      <div className="relative w-full min-w-60 md:w-67.5">
+      <div className="relative w-full md:w-[20rem] lg:w-[24rem]">
         <button
           type="button"
-          className="flex w-full items-center justify-between rounded-2xl border border-outline-variant bg-surface-container-high px-3 py-2 text-left"
+          className="flex w-full items-center justify-between rounded-2xl border border-outline-variant bg-surface-container-high px-3 py-2.5 text-left"
           onClick={onToggleCommodity}
         >
           <span className="flex flex-col">

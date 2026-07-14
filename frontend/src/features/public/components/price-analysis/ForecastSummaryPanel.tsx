@@ -40,15 +40,15 @@ export function ForecastSummaryPanel({
   onOpenDetail,
 }: ForecastSummaryPanelProps) {
   return (
-    <section className="flex flex-col gap-6">
-      <div className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+    <section className="flex flex-col gap-4 sm:gap-6">
+      <div className="rounded-3xl border border-outline-variant/80 bg-gradient-to-br from-surface-container-lowest via-surface-container-lowest to-surface-container p-4 shadow-[0_12px_36px_rgba(0,0,0,0.06)] sm:p-6">
         <div className="flex items-start gap-3">
-          <div className="rounded-2xl bg-primary/10 p-2 text-primary">
+          <div className="rounded-2xl bg-primary/10 p-2 text-primary shadow-sm">
             <MdBolt size={20} />
           </div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[.24em] text-outline">Forecast outlook</p>
-            <h3 className="mt-1 text-xl font-semibold text-on-surface">Next week snapshot</h3>
+            <h3 className="mt-1 text-xl font-semibold tracking-tight text-on-surface">Next week snapshot</h3>
           </div>
         </div>
 
@@ -58,18 +58,18 @@ export function ForecastSummaryPanel({
             { label: "Projected", value: formatCurrency(projectedPrice) },
             { label: "Confidence", value: formatConfidence(confidence) },
           ].map((item) => (
-            <div key={item.label} className="flex items-center justify-between rounded-2xl bg-surface-container px-3 py-2.5">
+            <div key={item.label} className="flex flex-col gap-1 rounded-2xl bg-surface-container px-3 py-2.5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
               <span className="text-sm text-on-surface-variant">{item.label}</span>
               <span className="text-sm font-semibold text-on-surface">{item.value}</span>
             </div>
           ))}
         </div>
 
-        <div className="mt-5 rounded-2xl border border-outline-variant bg-surface-container-high p-4">
-          <p className="text-sm text-on-surface-variant">{activeInsight.projection}</p>
+        <div className="mt-5 rounded-2xl border border-outline-variant/70 bg-surface-container-high p-4 shadow-sm">
+          <p className="text-sm leading-6 text-on-surface-variant">{activeInsight.projection}</p>
           <button
             type="button"
-            className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-opacity hover:opacity-80"
             onClick={onOpenDetail}
           >
             View detailed report <MdChevronRight size={18} />
@@ -77,7 +77,7 @@ export function ForecastSummaryPanel({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+      <div className="rounded-3xl border border-outline-variant/80 bg-gradient-to-br from-surface-container-lowest to-surface-container p-4 shadow-[0_10px_28px_rgba(0,0,0,0.05)] sm:p-6">
         <div className="flex items-center gap-2">
           <MdInfo className="text-primary" size={18} />
           <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Consumer note</p>

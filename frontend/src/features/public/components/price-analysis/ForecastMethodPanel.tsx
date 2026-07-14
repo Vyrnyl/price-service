@@ -1,6 +1,6 @@
 export function ForecastMethodPanel() {
   return (
-    <section className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+    <section className="rounded-3xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm sm:p-6">
       <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-outline">Forecast method</p>
       <div className="mt-4 rounded-2xl border border-outline-variant bg-surface-container-high p-4">
         <p className="text-sm font-semibold text-on-surface">ARIMA-based forecasting</p>
@@ -14,7 +14,7 @@ export function ForecastMethodPanel() {
           { label: "Seasonal effects", value: "Included" },
           { label: "Short-term outlook", value: "Updated daily" },
         ].map((item) => (
-          <div key={item.label} className="flex items-center justify-between rounded-2xl bg-surface-container px-3 py-2.5">
+          <div key={item.label} className="flex flex-col gap-1 rounded-2xl bg-surface-container px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
             <span className="text-sm text-on-surface-variant">{item.label}</span>
             <span className="text-sm font-semibold text-on-surface">{item.value}</span>
           </div>

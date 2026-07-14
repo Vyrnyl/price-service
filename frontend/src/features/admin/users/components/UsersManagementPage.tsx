@@ -163,9 +163,9 @@ export default function UsersManagementPage() {
 
   return (
     <main className="min-h-screen lg:ml-72">
-      <section className="px-container-margin-mobile py-12 md:px-container-margin-desktop">
+      <section className="px-container-margin-mobile py-8 sm:py-10 md:px-container-margin-desktop md:py-12">
         <div className="mx-auto max-w-6xl space-y-6">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <h1 className="font-h1-desktop text-h1-desktop text-on-surface mobile:font-h1-mobile mobile:text-h1-mobile">
                 System Access
@@ -182,7 +182,7 @@ export default function UsersManagementPage() {
                 setFormSuccess(null);
                 setFormOpen(true);
               }}
-              className="flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-on-primary transition-all hover:shadow-md active:scale-[0.98]"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-on-primary transition-all hover:shadow-md active:scale-[0.98] md:w-auto"
             >
               <MdOutlinePersonAdd size={20} />
               <span>Add New User</span>

@@ -65,9 +65,6 @@ export default function LoginPage() {
               <label className="block text-body-sm font-medium text-on-surface" htmlFor="password">
                 Password
               </label>
-              <button className="text-primary text-body-sm font-medium hover:underline" type="button">
-                Forgot Password?
-              </button>
             </div>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">
@@ -97,14 +94,6 @@ export default function LoginPage() {
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <input
-                id="remember"
-                type="checkbox"
-                className="h-4 w-4 rounded border-outline text-primary focus:ring-primary/30"
-              />
-              <label htmlFor="remember" className="text-body-sm text-on-surface-variant">
-                Remember Me
-              </label>
             </div>
             <button
               type="submit"
