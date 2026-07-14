@@ -10,12 +10,6 @@ export default function FooterSection() {
           © 2024 DTI Catanduanes. Government of the Philippines.
         </p>
       </div>
-      <div className="flex flex-wrap justify-center gap-6">
-        <a className="font-label-caps text-label-caps text-on-surface-variant transition-colors hover:text-primary" href="#">Privacy Policy</a>
-        <a className="font-label-caps text-label-caps text-on-surface-variant transition-colors hover:text-primary" href="#">Contact Us</a>
-        <a className="font-label-caps text-label-caps text-on-surface-variant transition-colors hover:text-primary" href="#">Freedom of Information</a>
-        <a className="font-label-caps text-label-caps text-on-surface-variant transition-colors hover:text-primary" href="#">Terms of Service</a>
-      </div>
       <div className="flex gap-4">
         <span className="cursor-pointer text-outline transition-colors hover:text-primary">
           <FaFacebookF />

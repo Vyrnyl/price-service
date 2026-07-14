@@ -41,7 +41,7 @@ const roleSpecificLinks: Record<
       icon: MdOutlineTrendingUp,
       label: "Price Records",
     },
-    { href: "/admin/settings", icon: MdOutlineSettings, label: "Settings" },
+    // { href: "/admin/settings", icon: MdOutlineSettings, label: "Settings" },
   ],
   officer: [
     { href: "/officer", icon: MdOutlineDashboard, label: "Officer Dashboard" },
@@ -65,7 +65,7 @@ const roleSpecificLinks: Record<
       icon: HiOutlineDocumentReport,
       label: "Reports",
     },
-    { href: "/officer/settings", icon: MdOutlineSettings, label: "Settings" },
+    // { href: "/officer/settings", icon: MdOutlineSettings, label: "Settings" },
   ],
   public: [
     { href: "/", icon: MdOutlineDashboard, label: "Dashboard" },

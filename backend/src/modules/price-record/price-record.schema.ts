@@ -7,7 +7,7 @@ export const createPriceRecordSchema = z.object({
   storeId: z.string().uuid('Invalid store ID'),
   price: z.coerce.number().positive('Price must be greater than 0'),
   dateAndTime: z.coerce.date(),
-  status: priceStatusEnum,
+  status: priceStatusEnum.optional(),
 });
 
 export const updatePriceRecordSchema = createPriceRecordSchema.partial();

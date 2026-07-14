@@ -26,6 +26,7 @@ export interface StoreOption {
 export interface CommodityOption {
   id: string;
   name: string;
+  srps?: Array<{ id: string; price: string; effectiveDate: string }>;
 }
 
 export type PriceStatusValue = "COMPLIANT" | "OVERPRICE" | "UNDERPRICE";
@@ -35,5 +36,4 @@ export interface CreatePriceRecordPayload {
   storeId: string;
   price: number;
   dateAndTime: string;
-  status: PriceStatusValue;
 }

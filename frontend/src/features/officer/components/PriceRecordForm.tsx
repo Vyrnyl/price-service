@@ -6,7 +6,6 @@ import { INPUT_CLASSES, INPUT_ERROR_CLASSES, PRIMARY_BUTTON_CLASSES } from "@/fe
 import type {
   CommodityOption,
   CreatePriceRecordPayload,
-  PriceStatusValue,
   StoreOption,
 } from "@/features/officer/price-records.types";
 
@@ -22,12 +21,6 @@ interface PriceRecordFormProps {
   onCancel: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }
-
-const STATUS_OPTIONS = [
-  { value: "COMPLIANT", label: "Compliant" },
-  { value: "OVERPRICE", label: "Above SRP" },
-  { value: "UNDERPRICE", label: "Below SRP" },
-] as const;
 
 export default function PriceRecordForm({
   stores,
@@ -89,7 +82,7 @@ export default function PriceRecordForm({
             <select
               value={newRecord.commodityId}
               onChange={(event) => onChange("commodityId", event.target.value)}
-              className={`${INPUT_CLASSES} ${formErrors.commodityId ? INPUT_ERROR_CLASSES : ""}`.trim()}
+              className={`${INPUT_CLASSES} max-h-48 overflow-y-auto ${formErrors.commodityId ? INPUT_ERROR_CLASSES : ""}`.trim()}
               aria-invalid={Boolean(formErrors.commodityId)}
             >
               <option value="">Select commodity</option>
@@ -129,21 +122,6 @@ export default function PriceRecordForm({
               aria-invalid={Boolean(formErrors.price)}
             />
             <FieldError message={formErrors.price} />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-body-sm font-medium text-on-surface">Status</label>
-            <select
-              value={newRecord.status}
-              onChange={(event) => onChange("status", event.target.value as PriceStatusValue)}
-              className={INPUT_CLASSES}
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 

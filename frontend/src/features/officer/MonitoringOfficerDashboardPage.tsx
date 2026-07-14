@@ -109,10 +109,6 @@ export default function MonitoringOfficerDashboardPage() {
                 Track the latest operational activity in your monitoring area.
               </p>
             </div>
-            <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-3 font-body-sm font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
-              <MdNotificationsActive />
-              View Alerts
-            </button>
           </div>
 
           <section className="flex flex-wrap gap-6">

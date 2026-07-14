@@ -2,12 +2,7 @@
 
 import { useEffect, useState, type ComponentType } from "react";
 import { apiFetch } from "../../../lib/api";
-import {
-  MdOutlineInventory2,
-  MdOutlineTrendingUp,
-  MdOutlineStorefront,
-  MdOutlinePersonAdd,
-} from "react-icons/md";
+import { MdOutlineInventory2, MdOutlineTrendingUp, MdOutlineStorefront } from "react-icons/md";
 import { FiUsers } from "react-icons/fi";
 import { IoFilterOutline } from "react-icons/io5";
 import { IoMdAdd, IoMdMore } from "react-icons/io";
@@ -25,20 +20,22 @@ type DashboardStat = {
 };
 
 type ActivityItem = {
+  id: string;
   title: string;
   description: string;
   time: string;
+  timestamp: string;
   icon: ComponentType<{ className?: string; size?: number }>;
   iconStyle: string;
   change?: string;
 };
 
-type StoreComplianceRow = {
+type RecentStoreRow = {
   id: string;
   name: string;
   location: string;
-  priceRecordCount: number;
-  lastUpdated: string;
+  officerName: string;
+  createdAt: string;
 };
 
 const initialStats: DashboardStat[] = [
@@ -106,7 +103,7 @@ function formatRelativeTime(value: string) {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStat[]>(initialStats);
   const [activityItems, setActivityItems] = useState<ActivityItem[]>([]);
-  const [storeComplianceRows, setStoreComplianceRows] = useState<StoreComplianceRow[]>([]);
+  const [recentStores, setRecentStores] = useState<RecentStoreRow[]>([]);
 
   useEffect(() => {
     async function loadDashboardStats() {
@@ -130,14 +127,6 @@ export default function AdminDashboardPage() {
             icon: MdOutlineInventory2,
             iconBg: "bg-primary-container/10",
             iconColor: "text-primary",
-          },
-          {
-            label: "Monitored Prices",
-            value: monitoredPrices,
-            meta: "Recent submissions",
-            icon: MdOutlineTrendingUp,
-            iconBg: "bg-tertiary-container/10",
-            iconColor: "text-tertiary",
           },
           {
             label: "Total Stores",
@@ -167,107 +156,75 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     async function loadActivityFeed() {
       try {
-        const [usersResponse, commoditiesResponse, srpsResponse] = await Promise.all([
-          apiFetch<Array<{ id: string; name: string; createdAt?: string }>>("/api/users"),
+        const [storesResponse, commoditiesResponse, priceRecordsResponse] = await Promise.all([
+          apiFetch<{ status: string; data: Array<{ id: string; name: string; location?: string; createdAt?: string }> }>("/api/stores"),
           apiFetch<{ status: string; data: Array<{ id: string; name: string; createdAt?: string }> }>("/api/commodities"),
-          apiFetch<{ status: string; data: Array<{ id: string; price?: number | string; effectiveDate?: string; createdAt?: string; commodity?: { name?: string } }> }>("/api/srps"),
+          apiFetch<{ status: string; data: Array<{ id: string; commodity?: { name?: string }; store?: { name?: string }; price?: number | string; createdAt?: string; dateAndTime?: string }> }>("/api/price-records"),
         ]);
 
-        const latestUser = [...usersResponse]
-          .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0] ?? null;
-        const latestCommodity = [...commoditiesResponse.data]
-          .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())[0] ?? null;
-        const latestSrp = [...srpsResponse.data]
-          .sort((a, b) => new Date(b.effectiveDate ?? b.createdAt ?? 0).getTime() - new Date(a.effectiveDate ?? a.createdAt ?? 0).getTime())[0] ?? null;
-
-        const nextItems: ActivityItem[] = [];
-
-        if (latestUser) {
-          nextItems.push({
-            icon: MdOutlinePersonAdd,
-            iconStyle: "bg-primary-container/10 text-primary",
-            title: "New user added",
-            description: `${latestUser.name} joined as a ${latestUser.id ? "new account" : "user"}`,
-            time: formatRelativeTime(latestUser.createdAt ?? new Date().toISOString()),
-          });
-        }
-
-        if (latestCommodity) {
-          nextItems.push({
+        const nextItems: ActivityItem[] = [
+          ...storesResponse.data.map((store) => ({
+            id: `store-${store.id}`,
+            icon: MdOutlineStorefront,
+            iconStyle: "bg-secondary-container text-on-secondary-container",
+            title: "New store added",
+            description: `${store.name} was added in ${store.location ?? "the system"}`,
+            time: formatRelativeTime(store.createdAt ?? new Date().toISOString()),
+            timestamp: store.createdAt ?? new Date().toISOString(),
+          })),
+          ...commoditiesResponse.data.map((commodity) => ({
+            id: `commodity-${commodity.id}`,
             icon: MdOutlineInventory2,
             iconStyle: "bg-secondary-container text-on-secondary-container",
             title: "Commodity added",
-            description: `${latestCommodity.name} was added to the system`,
-            time: formatRelativeTime(latestCommodity.createdAt ?? new Date().toISOString()),
-          });
-        }
-
-        if (latestSrp) {
-          nextItems.push({
+            description: `${commodity.name} was added to the system`,
+            time: formatRelativeTime(commodity.createdAt ?? new Date().toISOString()),
+            timestamp: commodity.createdAt ?? new Date().toISOString(),
+          })),
+          ...priceRecordsResponse.data.map((record) => ({
+            id: `price-record-${record.id}`,
             icon: MdOutlineTrendingUp,
             iconStyle: "bg-tertiary-container/10 text-tertiary",
-            title: "SRP updated",
-            description: `${latestSrp.commodity?.name ?? "Commodity"} now has an SRP of ₱${Number(latestSrp.price ?? 0).toFixed(2)}`,
-            time: formatRelativeTime(latestSrp.effectiveDate ?? latestSrp.createdAt ?? new Date().toISOString()),
-            change: `₱${Number(latestSrp.price ?? 0).toFixed(2)}`,
-          });
-        }
+            title: "Price record added",
+            description: `${record.commodity?.name ?? "Commodity"} at ${record.store?.name ?? "a store"} was recorded`,
+            time: formatRelativeTime(record.dateAndTime ?? record.createdAt ?? new Date().toISOString()),
+            timestamp: record.dateAndTime ?? record.createdAt ?? new Date().toISOString(),
+            change: `₱${Number(record.price ?? 0).toFixed(2)}`,
+          })),
+        ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-        setActivityItems(nextItems);
+        setActivityItems(nextItems.slice(0, 5));
       } catch (error) {
         console.error("Failed to load activity feed", error);
       }
     }
 
-    loadActivityFeed();
+    void loadActivityFeed();
   }, []);
 
   useEffect(() => {
-    async function loadStoreComplianceData() {
+    async function loadRecentStores() {
       try {
-        const [storesResponse, priceRecordsResponse] = await Promise.all([
-          apiFetch<{ status: string; data: Array<{ id: string; name: string; location?: string; createdAt?: string }> }>('/api/stores'),
-          apiFetch<{ status: string; data: Array<{ id: string; storeId?: string; store?: { name?: string }; price?: number | string; dateAndTime?: string; createdAt?: string; status?: string }> }>('/api/price-records'),
-        ]);
-
-        const recordsByStore = new Map<string, Array<{ createdAt?: string; dateAndTime?: string; price?: number | string; status?: string }>>();
-
-        for (const record of priceRecordsResponse.data) {
-          const storeId = record.storeId ?? '';
-          if (!recordsByStore.has(storeId)) {
-            recordsByStore.set(storeId, []);
-          }
-          recordsByStore.get(storeId)?.push(record);
-        }
+        const storesResponse = await apiFetch<{ status: string; data: Array<{ id: string; name: string; location?: string; createdAt?: string; user?: { name?: string } }> }>('/api/stores');
 
         const rows = storesResponse.data
-          .map((store) => {
-            const records = recordsByStore.get(store.id) ?? [];
-            const latestRecord = [...records].sort((a, b) => {
-              const aTime = new Date(a.dateAndTime ?? a.createdAt ?? 0).getTime();
-              const bTime = new Date(b.dateAndTime ?? b.createdAt ?? 0).getTime();
-              return bTime - aTime;
-            })[0];
+          .map((store) => ({
+            id: store.id,
+            name: store.name,
+            location: store.location ?? '—',
+            officerName: store.user?.name ?? 'Unassigned',
+            createdAt: store.createdAt ?? '',
+          }))
+          .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
+          .slice(0, 5);
 
-            const lastUpdated = latestRecord?.dateAndTime || latestRecord?.createdAt || store.createdAt || '';
-
-            return {
-              id: store.id,
-              name: store.name,
-              location: store.location ?? '—',
-              priceRecordCount: records.length,
-              lastUpdated,
-            };
-          })
-          .sort((a, b) => b.priceRecordCount - a.priceRecordCount || a.name.localeCompare(b.name));
-
-        setStoreComplianceRows(rows);
+        setRecentStores(rows);
       } catch (error) {
-        console.error('Failed to load store compliance data', error);
+        console.error('Failed to load recent stores', error);
       }
     }
 
-    loadStoreComplianceData();
+    void loadRecentStores();
   }, []);
 
   return (
@@ -277,16 +234,12 @@ export default function AdminDashboardPage() {
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
               <h2 className="font-h1-desktop text-h1-desktop text-on-surface">
-                Good morning, Admin User
+                Admin monitoring dashboard
               </h2>
               <p className="mt-1 font-body-lg text-on-surface-variant">
                 Here is the market overview for today, October 24, 2023.
               </p>
             </div>
-            <button className="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-on-primary shadow-sm transition-all hover:shadow-md">
-              <IoMdAdd />
-              New Price Entry
-            </button>
           </div>
 
           <section className="flex flex-wrap gap-6">
@@ -333,7 +286,7 @@ export default function AdminDashboardPage() {
               </div>
               <div className="flex-1 space-y-6">
                 {activityItems.map((item) => (
-                  <div key={`${item.title}-${item.time}`} className="flex items-start gap-4">
+                  <div key={item.id} className="flex items-start gap-4">
                     <div
                       className={`mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${item.iconStyle}`}
                     >
@@ -355,38 +308,25 @@ export default function AdminDashboardPage() {
                   </div>
                 ))}
               </div>
-              <button className="mt-8 w-full rounded-xl border border-primary/20 py-3 text-sm font-semibold text-primary transition-all hover:bg-primary/5">
-                View All Activity
-              </button>
             </div>
 
             <div className="rounded-3xl border border-outline-variant bg-white p-6 data-card-shadow md:p-8">
               <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <h4 className="font-h3-desktop text-h3-desktop text-on-surface">
-                  Store Compliance
+                  Recently Added Stores
                 </h4>
-                <div className="flex gap-2">
-                  <button className="flex items-center gap-1.5 rounded-xl border border-outline-variant px-3 py-2 text-xs font-semibold text-on-surface-variant">
-                    <IoFilterOutline />
-                    Filter
-                  </button>
-                  <button className="flex items-center gap-1.5 rounded-xl border border-outline-variant px-3 py-2 text-xs font-semibold text-on-surface-variant">
-                    <LuDownload />
-                    Export
-                  </button>
-                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left">
                   <thead>
                     <tr className="border-b border-outline-variant/30">
                       <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Store Name</th>
-                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Price Records</th>
-                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Last Updated</th>
+                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Officer</th>
+                      <th className="pb-4 text-[10px] font-semibold uppercase tracking-wide text-outline">Added On</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/20">
-                    {storeComplianceRows.map((row) => (
+                    {recentStores.map((row) => (
                       <tr key={row.id}>
                         <td className="py-4">
                           <div className="flex flex-col">
@@ -394,9 +334,9 @@ export default function AdminDashboardPage() {
                             <span className="text-sm text-on-surface-variant">{row.location}</span>
                           </div>
                         </td>
-                        <td className="py-4 text-sm font-semibold text-on-surface">{row.priceRecordCount}</td>
+                        <td className="py-4 text-sm text-on-surface">{row.officerName}</td>
                         <td className="py-4 text-sm text-on-surface-variant">
-                          {row.lastUpdated ? new Date(row.lastUpdated).toLocaleDateString() : '—'}
+                          {row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '—'}
                         </td>
                       </tr>
                     ))}

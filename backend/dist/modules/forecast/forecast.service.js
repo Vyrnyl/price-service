@@ -59,10 +59,9 @@ exports.forecastService = {
             series,
             horizon,
         });
-        await prisma_1.prisma.$transaction(async (tx) => {
-            await tx.forecast.deleteMany({ where: { commodityId } });
-            await tx.forecast.createMany({ data: forecastItems });
-        });
+        await prisma_1.prisma.forecast.deleteMany({ where: { commodityId } });
+        await forecast_repository_1.forecastRepository.createMany(forecastItems);
+        console.log('deleted old forecasts and created new forecasts for commodityId:', commodityId);
         return forecast_repository_1.forecastRepository.findByCommodityId(commodityId);
     },
 };

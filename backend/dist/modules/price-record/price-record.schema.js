@@ -8,7 +8,7 @@ exports.createPriceRecordSchema = zod_1.z.object({
     storeId: zod_1.z.string().uuid('Invalid store ID'),
     price: zod_1.z.coerce.number().positive('Price must be greater than 0'),
     dateAndTime: zod_1.z.coerce.date(),
-    status: priceStatusEnum,
+    status: priceStatusEnum.optional(),
 });
 exports.updatePriceRecordSchema = exports.createPriceRecordSchema.partial();
 exports.priceRecordIdParamSchema = zod_1.z.object({

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { MdAdd } from "react-icons/md";
+import { MdAdd, MdOutlineChevronLeft, MdOutlineChevronRight } from "react-icons/md";
 import { apiFetch } from "@/lib/api";
 import PriceRecordForm from "@/features/officer/components/PriceRecordForm";
 import PriceRecordFilters from "@/features/officer/components/PriceRecordFilters";
@@ -10,7 +10,6 @@ import type {
   CommodityOption,
   CreatePriceRecordPayload,
   PriceRecord,
-  PriceStatusValue,
   StoreOption,
 } from "@/features/officer/price-records.types";
 
@@ -18,12 +17,6 @@ const FILTERS = [
   { id: "all", label: "All Price Records" },
   { id: "compliant", label: "Compliant" },
 ];
-
-const STATUS_OPTIONS = [
-  { value: "COMPLIANT", label: "Compliant" },
-  { value: "OVERPRICE", label: "Above SRP" },
-  { value: "UNDERPRICE", label: "Below SRP" },
-] as const;
 
 function formatInputDateTime(value: string) {
   const date = new Date(value);
@@ -38,11 +31,31 @@ function createDefaultRecord(): CreatePriceRecordPayload {
     storeId: "",
     price: 0,
     dateAndTime: new Date().toISOString().slice(0, 16),
-    status: "COMPLIANT",
   };
 }
 
-function mapBackendPriceRecord(record: any): PriceRecord {
+type BackendPriceRecord = {
+  id: string;
+  dateAndTime: string;
+  price: number | string;
+  srp?: number | string;
+  status: "COMPLIANT" | "OVERPRICE" | "UNDERPRICE" | string;
+  store?: {
+    id?: string;
+    name?: string;
+    location?: string;
+  };
+  commodity?: {
+    id?: string;
+    name?: string;
+    category?: string;
+  };
+  user?: {
+    name?: string;
+  };
+};
+
+function mapBackendPriceRecord(record: BackendPriceRecord): PriceRecord {
   const dateObject = new Date(record.dateAndTime);
   const date = dateObject.toLocaleDateString("en-US", {
     month: "short",
@@ -82,7 +95,7 @@ function mapBackendPriceRecord(record: any): PriceRecord {
     commodityDetails: record.commodity?.category ?? "",
     price: `₱${Number(record.price).toFixed(2)}`,
     status: statusLabel,
-    statusValue: record.status,
+    statusValue: record.status as "COMPLIANT" | "OVERPRICE" | "UNDERPRICE" | undefined,
     srp: record.srp ? `₱${Number(record.srp).toFixed(2)}` : undefined,
     officerInitials,
     officerName,
@@ -111,6 +124,7 @@ export default function PriceRecordsPage({
   >({});
   const [submitLoading, setSubmitLoading] = useState(false);
   const [newRecord, setNewRecord] = useState<CreatePriceRecordPayload>(createDefaultRecord);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const loadData = async () => {
@@ -121,7 +135,7 @@ export default function PriceRecordsPage({
             apiFetch<{ status: string; data: CommodityOption[] }>(
               "/api/commodities",
             ),
-            apiFetch<{ status: string; data: any[] }>("/api/price-records"),
+            apiFetch<{ status: string; data: BackendPriceRecord[] }>("/api/price-records"),
           ]);
 
         setStores(storeResponse.data);
@@ -158,6 +172,11 @@ export default function PriceRecordsPage({
     });
   }, [activeFilter, commodityFilter, records, searchQuery, storeFilter]);
 
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const pagedRecords = filteredRecords.slice((safePage - 1) * pageSize, safePage * pageSize);
+
   const handleFieldChange = (
     field: keyof CreatePriceRecordPayload,
     value: string | number,
@@ -193,7 +212,6 @@ export default function PriceRecordsPage({
       storeId: record.storeId,
       price: Number(record.price.replace(/[^\d.]/g, "")) || 0,
       dateAndTime: record.dateAndTime ? formatInputDateTime(record.dateAndTime) : "",
-      status: (record.statusValue ?? "COMPLIANT") as CreatePriceRecordPayload["status"],
     });
     setFormOpen(true);
   };
@@ -229,7 +247,7 @@ export default function PriceRecordsPage({
         ...newRecord,
         dateAndTime: new Date(newRecord.dateAndTime).toISOString(),
       };
-      const response = await apiFetch<{ status: string; data: any }>(
+      const response = await apiFetch<{ status: string; data: BackendPriceRecord }>(
         editingRecord ? `/api/price-records/${editingRecord.id}` : "/api/price-records",
         {
           method: editingRecord ? "PUT" : "POST",
@@ -323,11 +341,55 @@ export default function PriceRecordsPage({
             </div>
           ) : null}
 
-          <PriceRecordsTable
-            records={filteredRecords}
-            onEdit={handleEditRecord}
-            hideActions={hideActions}
-          />
+          <div className="rounded-3xl border border-outline-variant bg-white p-2 sm:p-3">
+            <PriceRecordsTable
+              records={pagedRecords}
+              onEdit={handleEditRecord}
+              hideActions={hideActions}
+              hideOfficerColumn
+            />
+            {filteredRecords.length > pageSize ? (
+              <div className="mt-3 flex flex-col gap-3 border-t border-outline-variant bg-surface-container-low px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                <p className="text-[11px] text-on-surface-variant sm:text-sm">
+                  Showing {(safePage - 1) * pageSize + 1}-{Math.min(safePage * pageSize, filteredRecords.length)} of {filteredRecords.length} records
+                </p>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-outline transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-9"
+                    disabled={safePage === 1}
+                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  >
+                    <MdOutlineChevronLeft size={18} />
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    <button
+                      key={page}
+                      type="button"
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg border text-[11px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-sm ${
+                        safePage === page
+                          ? "border-primary bg-primary text-on-primary"
+                          : "border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high"
+                      }`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-outline-variant bg-surface-container-lowest text-outline transition-colors hover:bg-surface-container-high disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-9"
+                    disabled={safePage === totalPages}
+                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                  >
+                    <MdOutlineChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
     </main>

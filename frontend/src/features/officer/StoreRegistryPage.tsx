@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { useMemo, useState } from "react";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { CreateStoreDialog } from "@/features/officer/components/CreateStoreDialog";
 import { StoreRegistryHeader } from "./components/StoreRegistryHeader";
@@ -43,7 +44,35 @@ export default function StoreRegistryPage({ showAssignedOfficer = true, canCreat
     handleQuickFilterChange,
   } = useStoreRegistryState();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
   const selectedStoreName = stores.find((store) => store.id === expandedStoreId)?.name;
+  const totalPages = Math.max(1, Math.ceil(filteredStores.length / pageSize));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const pagedStores = useMemo(
+    () => filteredStores.slice((safeCurrentPage - 1) * pageSize, safeCurrentPage * pageSize),
+    [filteredStores, safeCurrentPage],
+  );
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleMunicipalityFilterChange = (value: string) => {
+    setMunicipalityFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleQuickFilterSelect = (value: string) => {
+    handleQuickFilterChange(value);
+    setCurrentPage(1);
+  };
 
   return (
     <main className="min-h-screen lg:ml-72">
@@ -72,13 +101,13 @@ export default function StoreRegistryPage({ showAssignedOfficer = true, canCreat
 
           <StoreRegistryToolbar
             searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
+            onSearchChange={handleSearchChange}
             municipalityFilter={municipalityFilter}
-            onMunicipalityFilterChange={setMunicipalityFilter}
+            onMunicipalityFilterChange={handleMunicipalityFilterChange}
             statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
+            onStatusFilterChange={handleStatusFilterChange}
             quickFilter={quickFilter}
-            onQuickFilterChange={handleQuickFilterChange}
+            onQuickFilterChange={handleQuickFilterSelect}
             storeCount={filteredStores.length}
           />
 
@@ -93,7 +122,7 @@ export default function StoreRegistryPage({ showAssignedOfficer = true, canCreat
           ) : (
             <>
               <StoreRegistryGrid
-                stores={filteredStores}
+                stores={pagedStores}
                 showAssignedOfficer={showAssignedOfficer}
                 onEdit={handleEditStore}
                 expandedStoreId={expandedStoreId}
@@ -113,18 +142,32 @@ export default function StoreRegistryPage({ showAssignedOfficer = true, canCreat
 
           <div className="flex flex-col items-center justify-between gap-4 border-t border-outline-variant py-6 md:flex-row">
             <span className="font-body-sm text-on-surface-variant">
-              Showing {filteredStores.length} store{filteredStores.length === 1 ? "" : "s"}
+              Showing {filteredStores.length === 0 ? 0 : `${(safeCurrentPage - 1) * pageSize + 1}-${Math.min(safeCurrentPage * pageSize, filteredStores.length)}`} of {filteredStores.length} store{filteredStores.length === 1 ? "" : "s"}
             </span>
             <div className="flex gap-2">
-              <button className={ICON_BUTTON_CLASSES}>
+              <button
+                className={ICON_BUTTON_CLASSES}
+                disabled={safeCurrentPage === 1}
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              >
                 <MdChevronLeft size={20} />
               </button>
-              <button className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary font-bold text-on-primary shadow-sm">
-                1
-              </button>
-              <button className={ICON_BUTTON_CLASSES}>2</button>
-              <button className={ICON_BUTTON_CLASSES}>3</button>
-              <button className={ICON_BUTTON_CLASSES}>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  className={`flex h-10 w-10 items-center justify-center rounded-lg font-bold shadow-sm ${
+                    safeCurrentPage === page ? "bg-primary text-on-primary" : `${ICON_BUTTON_CLASSES} text-on-surface-variant`
+                  }`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                className={ICON_BUTTON_CLASSES}
+                disabled={safeCurrentPage === totalPages}
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+              >
                 <MdChevronRight size={20} />
               </button>
             </div>

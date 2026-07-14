@@ -25,6 +25,34 @@ const DEFAULT_CATEGORIES: CategoryOption[] = [
   { value: "ALL", label: "All Categories" },
 ];
 
+const MAX_REPORT_RANGE_DAYS = 30;
+
+function addDaysToDate(value: string, days: number) {
+  const date = new Date(value);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function getDateRangeError(startDate: string, endDate: string) {
+  if (!startDate || !endDate) {
+    return null;
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (start > end) {
+    return "Start date cannot be after the end date.";
+  }
+
+  const diffInDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffInDays > MAX_REPORT_RANGE_DAYS) {
+    return `Date range cannot exceed ${MAX_REPORT_RANGE_DAYS} days.`;
+  }
+
+  return null;
+}
+
 function mapBackendReportToRecent(report: BackendReport): RecentReport {
   const formattedDate = new Date(report.createdAt).toLocaleDateString("en-US", {
     month: "short",
@@ -71,9 +99,8 @@ export default function ReportGenerationPage() {
   const isStoreMonitoring = selectedReportType.id === "store-monitoring";
   const isDailyCompliance = selectedReportType.id === "daily-compliance";
 
-  const selectedFormat = exportFormats.find((format) => format.label === selectedExportFormat) ?? exportFormats[0];
-
-  const isGenerateDisabled = (!isDailyCompliance && (!startDate || !endDate)) || (isStoreMonitoring && !selectedStoreId);
+  const rangeError = useMemo(() => getDateRangeError(startDate, endDate), [startDate, endDate]);
+  const isGenerateDisabled = (!isDailyCompliance && (!startDate || !endDate)) || Boolean(rangeError) || (isStoreMonitoring && !selectedStoreId);
 
   const period = useMemo(() => {
     if (!startDate || !endDate) {
@@ -131,24 +158,48 @@ export default function ReportGenerationPage() {
     void loadCategories();
   }, []);
 
-  useEffect(() => {
-    if (!isStoreMonitoring) {
-      setSelectedStoreId("");
-    }
-  }, [isStoreMonitoring]);
+  const handleReportTypeSelect = (typeId: string) => {
+    setSelectedReportTypeId(typeId);
 
-  useEffect(() => {
-    if (isDailyCompliance) {
-      const today = new Date();
-      const formatted = today.toISOString().slice(0, 10);
-      setStartDate(formatted);
-      setEndDate(formatted);
+    const nextType = reportTypes.find((type) => type.id === typeId) ?? reportTypes[0];
+    if (nextType.id === "daily-compliance") {
+      const today = new Date().toISOString().slice(0, 10);
+      setStartDate(today);
+      setEndDate(today);
+      setSelectedStoreId("");
       return;
     }
 
     setStartDate("");
     setEndDate("");
-  }, [isDailyCompliance]);
+    setSelectedStoreId("");
+  };
+
+  const handleStartDateChange = (value: string) => {
+    setStartDate(value);
+
+    if (!value || !endDate) {
+      return;
+    }
+
+    const error = getDateRangeError(value, endDate);
+    if (error && error.includes("exceed")) {
+      setEndDate(addDaysToDate(value, MAX_REPORT_RANGE_DAYS));
+    }
+  };
+
+  const handleEndDateChange = (value: string) => {
+    setEndDate(value);
+
+    if (!startDate || !value) {
+      return;
+    }
+
+    const error = getDateRangeError(startDate, value);
+    if (error && error.includes("exceed")) {
+      setEndDate(addDaysToDate(startDate, MAX_REPORT_RANGE_DAYS));
+    }
+  };
 
   const handleGenerateReport = async () => {
     setError(null);
@@ -212,7 +263,7 @@ export default function ReportGenerationPage() {
                       key={type.id}
                       type={type}
                       isSelected={selectedReportTypeId === type.id}
-                      onSelect={() => setSelectedReportTypeId(type.id)}
+                      onSelect={() => handleReportTypeSelect(type.id)}
                     />
                   ))}
                 </div>
@@ -237,7 +288,7 @@ export default function ReportGenerationPage() {
                           className="flex-1 min-w-0 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
                           type="date"
                           value={startDate}
-                          onChange={(event) => setStartDate(event.target.value)}
+                          onChange={(event) => handleStartDateChange(event.target.value)}
                         />
                         <span className="flex items-center justify-center rounded-xl border border-outline-variant bg-white px-4 text-body-sm font-semibold text-on-surface-variant">
                           to
@@ -246,9 +297,14 @@ export default function ReportGenerationPage() {
                           className="flex-1 min-w-0 rounded-xl border border-outline-variant bg-white p-3 font-body-sm text-body-sm"
                           type="date"
                           value={endDate}
-                          onChange={(event) => setEndDate(event.target.value)}
+                          onChange={(event) => handleEndDateChange(event.target.value)}
                         />
                       </div>
+                      {rangeError ? (
+                        <p className="text-sm text-error">{rangeError}</p>
+                      ) : (
+                        <p className="text-sm text-on-surface-variant">Maximum export range is {MAX_REPORT_RANGE_DAYS} days.</p>
+                      )}
                     </div>
                   ) : null}
 
