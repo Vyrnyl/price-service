@@ -228,16 +228,6 @@ export default function CommodityManagementPage({ userRole }: CommodityManagemen
       iconBg: "bg-secondary-container/10",
       iconColor: "text-secondary",
     },
-    {
-      label: "SRP Violations",
-      value: "05",
-      meta: "Critical",
-      icon: MdOutlineWarning,
-      iconBg: "bg-error-container/20",
-      iconColor: "text-error",
-      valueColor: "text-error",
-      metaStyle: "text-error bg-error/10 animate-pulse",
-    },
   ];
 
 

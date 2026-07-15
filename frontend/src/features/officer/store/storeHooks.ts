@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { mapBackendPriceRecord, fetchStores, fetchStorePriceRecords, saveStore } from "@/features/officer/store/storeApi";
+import { mapBackendPriceRecord, fetchCommodities, fetchStores, fetchStorePriceRecords, saveStore } from "@/features/officer/store/storeApi";
 import type { Store, StoreFormData } from "@/features/officer/types";
 import type { PriceRecord } from "@/features/officer/price-records.types";
 import { getStoreStatus } from "@/features/officer/components/storeStatus";
@@ -170,10 +170,13 @@ export function useStoreRegistryState() {
     setStoreRecordsLoading((current) => ({ ...current, [store.id]: true }));
 
     try {
-      const response = await fetchStorePriceRecords();
-      const recordsForStore = response.data
-        .filter((record) => record.store?.id === store.id)
-        .map(mapBackendPriceRecord);
+      const [priceRecordsResponse, commoditiesResponse] = await Promise.all([
+        fetchStorePriceRecords(),
+        fetchCommodities(),
+      ]);
+      const recordsForStore = priceRecordsResponse.data
+        .filter((record: { store?: { id?: string } }) => record.store?.id === store.id)
+        .map((record: { store?: { id?: string } }) => mapBackendPriceRecord(record as never, commoditiesResponse.data));
 
       setStoreRecords((current) => ({ ...current, [store.id]: recordsForStore }));
     } catch {

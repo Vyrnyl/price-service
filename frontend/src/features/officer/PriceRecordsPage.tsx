@@ -34,6 +34,49 @@ function createDefaultRecord(): CreatePriceRecordPayload {
   };
 }
 
+function getStatusLabel(status: string | undefined, price: number, srpPrice: number | null) {
+  if (Number.isFinite(price) && srpPrice != null) {
+    if (price > srpPrice) {
+      return "Above SRP";
+    }
+
+    if (price < srpPrice) {
+      return "Below SRP";
+    }
+
+    return "Compliant";
+  }
+
+  switch (status) {
+    case "Above SRP":
+    case "OVERPRICE":
+      return "Above SRP";
+    case "Below SRP":
+    case "UNDERPRICE":
+      return "Below SRP";
+    case "Compliant":
+    case "COMPLIANT":
+      return "Compliant";
+    default:
+      return "Unknown";
+  }
+}
+
+function getLatestSrpPrice(commodity?: CommodityOption) {
+  if (!commodity?.srps?.length) {
+    return null;
+  }
+
+  const sorted = [...commodity.srps].sort((left, right) => {
+    const leftTime = new Date(left.effectiveDate).getTime();
+    const rightTime = new Date(right.effectiveDate).getTime();
+    return rightTime - leftTime;
+  });
+
+  const latestSrp = Number(sorted[0]?.price);
+  return Number.isFinite(latestSrp) ? latestSrp : null;
+}
+
 type BackendPriceRecord = {
   id: string;
   dateAndTime: string;
@@ -55,7 +98,7 @@ type BackendPriceRecord = {
   };
 };
 
-function mapBackendPriceRecord(record: BackendPriceRecord): PriceRecord {
+function mapBackendPriceRecord(record: BackendPriceRecord, commodities: CommodityOption[] = []): PriceRecord {
   const dateObject = new Date(record.dateAndTime);
   const date = dateObject.toLocaleDateString("en-US", {
     month: "short",
@@ -75,12 +118,11 @@ function mapBackendPriceRecord(record: BackendPriceRecord): PriceRecord {
     .join("")
     .toUpperCase();
 
-  const statusLabel =
-    record.status === "COMPLIANT"
-      ? "Compliant"
-      : record.status === "OVERPRICE"
-        ? "Above SRP"
-        : "Below SRP";
+  const commodity = commodities.find((item) => item.id === record.commodity?.id);
+  const latestSrpPrice = getLatestSrpPrice(commodity);
+  const numericPrice = Number(record.price);
+  const statusLabel = getStatusLabel(record.status, numericPrice, latestSrpPrice);
+  const srpText = latestSrpPrice != null ? `₱${latestSrpPrice.toFixed(2)}` : record.srp ? `₱${Number(record.srp).toFixed(2)}` : undefined;
 
   return {
     id: record.id,
@@ -96,7 +138,7 @@ function mapBackendPriceRecord(record: BackendPriceRecord): PriceRecord {
     price: `₱${Number(record.price).toFixed(2)}`,
     status: statusLabel,
     statusValue: record.status as "COMPLIANT" | "OVERPRICE" | "UNDERPRICE" | undefined,
-    srp: record.srp ? `₱${Number(record.srp).toFixed(2)}` : undefined,
+    srp: srpText,
     officerInitials,
     officerName,
   };
@@ -140,7 +182,7 @@ export default function PriceRecordsPage({
 
         setStores(storeResponse.data);
         setCommodities(commodityResponse.data);
-        setRecords(recordResponse.data.map(mapBackendPriceRecord));
+        setRecords(recordResponse.data.map((record) => mapBackendPriceRecord(record, commodityResponse.data)));
       } catch (error) {
         console.error("Unable to load price record data", error);
       }
@@ -259,13 +301,13 @@ export default function PriceRecordsPage({
         setRecords((current) =>
           current.map((record) =>
             record.id === editingRecord.id
-              ? mapBackendPriceRecord(response.data)
+              ? mapBackendPriceRecord(response.data, commodities)
               : record,
           ),
         );
       } else {
         setRecords((current) => [
-          mapBackendPriceRecord(response.data),
+          mapBackendPriceRecord(response.data, commodities),
           ...current,
         ]);
       }

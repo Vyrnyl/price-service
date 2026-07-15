@@ -39,7 +39,7 @@ export default function AppShell({
           onClose={() => setIsDrawerOpen(false)}
         />
       )}
-      <main className="flex-1 pb-24">
+      <main className="flex-1 pb-8 md:pb-10">
         {children}
       </main>
       <FooterSection />

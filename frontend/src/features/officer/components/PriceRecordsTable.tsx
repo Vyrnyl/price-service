@@ -13,8 +13,8 @@ interface PriceRecordsTableProps {
 
 function getStatusClasses(status: string, compact = false) {
   const baseClasses = compact
-    ? "rounded-full bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 text-[10px] font-semibold"
-    : "rounded-full bg-secondary-fixed text-on-secondary-fixed px-3 py-1 text-[12px] font-semibold";
+    ? "rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-semibold"
+    : "rounded-full bg-primary/10 text-primary px-3 py-1 text-[12px] font-semibold";
 
   if (status === "Compliant") {
     return baseClasses;
@@ -27,8 +27,8 @@ function getStatusClasses(status: string, compact = false) {
   }
 
   return compact
-    ? "rounded-full bg-surface-container-highest text-on-surface-variant px-2 py-0.5 text-[10px] font-semibold"
-    : "rounded-full bg-surface-container-highest text-on-surface-variant px-3 py-1 text-[12px] font-semibold";
+    ? "rounded-full bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 text-[10px] font-semibold"
+    : "rounded-full bg-secondary-fixed text-on-secondary-fixed px-3 py-1 text-[12px] font-semibold";
 }
 
 export default function PriceRecordsTable({
@@ -41,20 +41,16 @@ export default function PriceRecordsTable({
   headerHighlight,
 }: PriceRecordsTableProps) {
   return (
-    <div className={`rounded-3xl border border-outline-variant bg-white ${compact ? "p-3 md:p-4" : "p-5 md:p-6"} data-card-shadow`}>
+    <>
       <div className={`mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${compact ? "mb-3" : "mb-5"}`}>
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className={`${compact ? "text-sm" : "font-h3-desktop text-h3-desktop"} text-on-surface`}>Price Records</h2>
             {headerHighlight ? (
               <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary sm:text-xs">
                 {headerHighlight}
               </span>
             ) : null}
           </div>
-          <p className={`${compact ? "text-[11px]" : "text-body-xs"} text-on-surface-variant`}>
-            Review the latest submissions and compliance status.
-          </p>
         </div>
         <span className={`inline-flex items-center rounded-full bg-surface-container-low py-1 px-2 text-[11px] text-on-surface-variant ${compact ? "text-[11px]" : "text-body-xs"}`}>
           {records.length} records shown
@@ -132,6 +128,6 @@ export default function PriceRecordsTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   );
 }

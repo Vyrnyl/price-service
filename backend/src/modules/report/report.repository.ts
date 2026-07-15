@@ -1,6 +1,8 @@
 import { prisma } from '../../prisma';
 import type { Prisma } from '@prisma/client';
 import type { CreateReportInput, UpdateReportInput } from './report.schema';
+import { resolveReportScope } from './report.scope';
+import type { AuthUser } from '../../../types/express';
 
 export const reportRepository = {
   create: (data: CreateReportInput, userId: string) => {
@@ -15,10 +17,14 @@ export const reportRepository = {
     });
   },
 
-  findAll: () =>
-    prisma.report.findMany({
+  findAll: (authUser?: AuthUser) => {
+    const scope = resolveReportScope(authUser);
+
+    return prisma.report.findMany({
+      where: scope,
       include: { user: true },
-    }),
+    });
+  },
 
   findById: (id: string) =>
     prisma.report.findUnique({
@@ -26,7 +32,11 @@ export const reportRepository = {
       include: { user: true },
     }),
 
-  deleteAll: () => prisma.report.deleteMany(),
+  deleteAll: (authUser?: AuthUser) => {
+    const scope = resolveReportScope(authUser);
+
+    return prisma.report.deleteMany({ where: scope });
+  },
 
   update: (id: string, data: UpdateReportInput) => {
     const { format, commodityGroup, storeId, ...rest } = data;

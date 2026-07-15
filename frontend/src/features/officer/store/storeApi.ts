@@ -1,7 +1,7 @@
 import type { StoreFormData } from "@/features/officer/types";
 import { apiFetch } from "@/lib/api";
 import type { Store } from "@/features/officer/types";
-import type { PriceRecord } from "@/features/officer/price-records.types";
+import type { CommodityOption, PriceRecord } from "@/features/officer/price-records.types";
 
 export interface BackendPriceRecord {
   id: string;
@@ -33,7 +33,50 @@ const formatNumber = (value: number | string) => {
   return `₱${numericValue.toFixed(2)}`;
 };
 
-export function mapBackendPriceRecord(record: BackendPriceRecord): PriceRecord {
+function getLatestSrpPrice(commodity?: CommodityOption) {
+  if (!commodity?.srps?.length) {
+    return null;
+  }
+
+  const sorted = [...commodity.srps].sort((left, right) => {
+    const leftTime = new Date(left.effectiveDate).getTime();
+    const rightTime = new Date(right.effectiveDate).getTime();
+    return rightTime - leftTime;
+  });
+
+  const latestSrp = Number(sorted[0]?.price);
+  return Number.isFinite(latestSrp) ? latestSrp : null;
+}
+
+function getStatusLabel(status: string | undefined, price: number, srpPrice: number | null) {
+  if (Number.isFinite(price) && srpPrice != null) {
+    if (price > srpPrice) {
+      return "Above SRP";
+    }
+
+    if (price < srpPrice) {
+      return "Below SRP";
+    }
+
+    return "Compliant";
+  }
+
+  switch (status) {
+    case "Above SRP":
+    case "OVERPRICE":
+      return "Above SRP";
+    case "Below SRP":
+    case "UNDERPRICE":
+      return "Below SRP";
+    case "Compliant":
+    case "COMPLIANT":
+      return "Compliant";
+    default:
+      return "Unknown";
+  }
+}
+
+export function mapBackendPriceRecord(record: BackendPriceRecord, commodities: CommodityOption[] = []): PriceRecord {
   const dateObject = new Date(record.dateAndTime ?? record.createdAt ?? "");
   const date = dateObject.toLocaleDateString("en-US", {
     month: "short",
@@ -53,12 +96,10 @@ export function mapBackendPriceRecord(record: BackendPriceRecord): PriceRecord {
     .join("")
     .toUpperCase();
 
-  const statusLabel =
-    record.status === "COMPLIANT"
-      ? "Compliant"
-      : record.status === "OVERPRICE"
-        ? "Above SRP"
-        : "Below SRP";
+  const commodity = commodities.find((item) => item.id === record.commodity?.id);
+  const latestSrpPrice = getLatestSrpPrice(commodity);
+  const numericPrice = Number(record.price);
+  const statusLabel = getStatusLabel(record.status, numericPrice, latestSrpPrice);
 
   const statusValue =
     record.status === "COMPLIANT" || record.status === "OVERPRICE" || record.status === "UNDERPRICE"
@@ -79,7 +120,7 @@ export function mapBackendPriceRecord(record: BackendPriceRecord): PriceRecord {
     price: formatNumber(record.price),
     status: statusLabel,
     statusValue,
-    srp: record.srp ? formatNumber(record.srp) : undefined,
+    srp: latestSrpPrice != null ? formatNumber(latestSrpPrice) : record.srp ? formatNumber(record.srp) : undefined,
     officerInitials,
     officerName,
   };
@@ -90,7 +131,11 @@ export async function fetchStores() {
 }
 
 export async function fetchStorePriceRecords() {
-  return apiFetch<{ status: string; data: BackendPriceRecord[] }>("/api/price-records");
+  return apiFetch<{ status: string; data: BackendPriceRecord[] }>('/api/price-records');
+}
+
+export async function fetchCommodities() {
+  return apiFetch<{ status: string; data: CommodityOption[] }>('/api/commodities');
 }
 
 export async function saveStore(formData: StoreFormData, storeId?: string) {
