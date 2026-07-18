@@ -14,6 +14,9 @@ const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
 
 const reportsDir = path.resolve(process.cwd(), 'reports');
 
+console.log("process.env.CORS_ORIGIN =", process.env.CORS_ORIGIN);
+console.log("corsOrigin =", corsOrigin);
+
 app.use(cors({
     origin: corsOrigin,
     credentials: true,
@@ -39,5 +42,5 @@ app.use((_req: Request, res: Response) => {
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(`Server running on ${corsOrigin}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
