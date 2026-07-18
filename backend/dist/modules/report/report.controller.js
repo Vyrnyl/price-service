@@ -23,8 +23,9 @@ exports.reportController = {
         const report = await report_service_1.reportService.createReport(reportPayload, authUser.userId);
         res.status(201).json({ status: 'success', data: report });
     },
-    getReports: async (_req, res) => {
-        const reports = await report_service_1.reportService.getReports();
+    getReports: async (req, res) => {
+        const authUser = req.user;
+        const reports = await report_service_1.reportService.getReports(authUser);
         res.json({ status: 'success', data: reports });
     },
     getReportById: async (req, res) => {
@@ -49,8 +50,9 @@ exports.reportController = {
         await report_service_1.reportService.deleteReport(id);
         res.status(204).send();
     },
-    deleteAllReports: async (_req, res) => {
-        await report_service_1.reportService.deleteAllReports();
+    deleteAllReports: async (req, res) => {
+        const authUser = req.user;
+        await report_service_1.reportService.deleteAllReports(authUser);
         res.status(204).send();
     },
 };
