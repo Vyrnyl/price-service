@@ -28,14 +28,17 @@ app.use("/api/public", public_routes_1.default);
 app.use("/api", auth_middleware_1.authenticate, routes_1.default);
 app.use("/reports/files", express_1.default.static(reportsDir));
 app.get("/", (_req, res) => {
+    res.json({ message: "PresyoSerbisyo backend is running" });
+});
+app.get("/", (_req, res) => {
     console.log("process.env.CORS_ORIGIN =", process.env.CORS_ORIGIN);
     console.log("corsOrigin =", corsOrigin);
-    res.json({ message: "PresyoSerbisyo backend is running sss" });
+    res.json({ message: "TEST API" });
 });
 app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });
 });
 app.use(error_middleware_1.errorHandler);
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}, corsOrigin: ${corsOrigin}`);
+    console.log(`Server running on http://localhost:${port}`);
 });

@@ -10,8 +10,8 @@ exports.authController = {
         const result = await auth_service_1.authService.login(validatedBody);
         res.cookie("accessToken", result.accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "none",
+            secure: true,
             maxAge: 60 * 60 * 1000, // 1 hour
         });
         return res.status(200).json({
