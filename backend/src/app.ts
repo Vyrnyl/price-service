@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { Request, Response } from "express";
 import path from "path";
 import cors from "cors";
@@ -10,13 +11,24 @@ import publicRoutes from "./modules/public/public.routes";
 
 const app = express();
 const port = process.env.PORT || 5000;
-const corsOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
+const allowedOrigins = [
+  process.env.CORS_ORIGIN,
+  "http://localhost:3000",
+  "https://price-service-720edyncw-cap1313.vercel.app",
+].filter(Boolean) as string[];
 
 const reportsDir = path.resolve(process.cwd(), "reports");
 
 app.use(
   cors({
-    origin: corsOrigin,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     credentials: true,
   }),
 );
@@ -33,9 +45,9 @@ app.use("/reports/files", express.static(reportsDir));
 app.get("/", (_req: Request, res: Response) => {
   res.json({ message: "PresyoSerbisyo backend is running" });
 });
-app.get("/", (_req: Request, res: Response) => {
+app.get("/api/test", (_req: Request, res: Response) => {
   console.log("process.env.CORS_ORIGIN =", process.env.CORS_ORIGIN);
-  console.log("corsOrigin =", corsOrigin);
+  console.log("allowedOrigins =", allowedOrigins);
   res.json({ message: "TEST API" });
 });
 

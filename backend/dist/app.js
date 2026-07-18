@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
@@ -14,10 +15,20 @@ const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
 const public_routes_1 = __importDefault(require("./modules/public/public.routes"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 5000;
-const corsOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
+const allowedOrigins = [
+    process.env.CORS_ORIGIN,
+    "http://localhost:3000",
+    "https://price-service-720edyncw-cap1313.vercel.app",
+].filter(Boolean);
 const reportsDir = path_1.default.resolve(process.cwd(), "reports");
 app.use((0, cors_1.default)({
-    origin: corsOrigin,
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+            return;
+        }
+        callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     credentials: true,
 }));
 app.use(express_1.default.json());
@@ -30,9 +41,9 @@ app.use("/reports/files", express_1.default.static(reportsDir));
 app.get("/", (_req, res) => {
     res.json({ message: "PresyoSerbisyo backend is running" });
 });
-app.get("/", (_req, res) => {
+app.get("/api/test", (_req, res) => {
     console.log("process.env.CORS_ORIGIN =", process.env.CORS_ORIGIN);
-    console.log("corsOrigin =", corsOrigin);
+    console.log("allowedOrigins =", allowedOrigins);
     res.json({ message: "TEST API" });
 });
 app.use((_req, res) => {
