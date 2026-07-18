@@ -66,6 +66,8 @@ export default function CommodityManagementPage({ userRole }: CommodityManagemen
   const [statusFilter, setStatusFilter] = useState<"ALL" | "Active" | "Inactive">("ALL");
   const [currentPage, setCurrentPage] = useState(1);
 
+  console.log(process.env.NEXT_PUBLIC_API_URL);
+  
   const refreshCommodityRows = async () => {
     try {
       const commodities = await getCommodities();

@@ -1,4 +1,3 @@
-"use client";
 
 const TestPage = () => {
   const users = async () => {
@@ -25,11 +24,12 @@ const TestPage = () => {
     const data = await response.json();
     console.log(data)
   }
-  login();
+  // login();
 
-  return (
-    <div>TestPage</div>
-  )
-}
+  const testValue = process.env.NEXT_PUBLIC_API_BASE_URL ?? "not set";
+  // console.log("NEXT_PUBLIC_API_BASE_URL:", testValue);
+
+  return <div>TestPage - {testValue}</div>;
+};
 
 export default TestPage

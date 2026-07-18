@@ -10,11 +10,12 @@ import publicRoutes from './modules/public/public.routes';
 
 const app = express();
 const port = process.env.PORT || 5000;
+const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
 
 const reportsDir = path.resolve(process.cwd(), 'reports');
 
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: corsOrigin,
     credentials: true,
 }));
 
