@@ -31,9 +31,12 @@ app.use("/api", authenticate, apiRoutes);
 app.use("/reports/files", express.static(reportsDir));
 
 app.get("/", (_req: Request, res: Response) => {
+  res.json({ message: "PresyoSerbisyo backend is running" });
+});
+app.get("/", (_req: Request, res: Response) => {
   console.log("process.env.CORS_ORIGIN =", process.env.CORS_ORIGIN);
   console.log("corsOrigin =", corsOrigin);
-  res.json({ message: "PresyoSerbisyo backend is running sss" });
+  res.json({ message: "TEST API" });
 });
 
 app.use((_req: Request, res: Response) => {
@@ -43,7 +46,5 @@ app.use((_req: Request, res: Response) => {
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(
-    `Server running on http://localhost:${port}, corsOrigin: ${corsOrigin}`,
-  );
+  console.log(`Server running on http://localhost:${port}`);
 });

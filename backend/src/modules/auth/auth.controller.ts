@@ -11,8 +11,8 @@ export const authController = {
 
     res.cookie("accessToken", result.accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
+      secure: true,
       maxAge: 60 * 60 * 1000, // 1 hour
     });
 
