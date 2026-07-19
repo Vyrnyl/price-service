@@ -22,11 +22,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5
 export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const { method = "GET", headers = {}, body, credentials = "include" } = options;
   const isAbsoluteUrl = path.startsWith("http://") || path.startsWith("https://");
-  const url = isAbsoluteUrl
-    ? path
-    : path.startsWith("/api")
-      ? path
-      : `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = isAbsoluteUrl ? path : path.startsWith("/api/") ? path : `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
 
   const fetchOptions: RequestInit = {
     method,

@@ -1,46 +1,37 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
 
-function copyResponseHeaders(source: Headers, target: Headers) {
-  source.forEach((value, key) => {
-    const lowerKey = key.toLowerCase();
-    if (lowerKey === "content-length" || lowerKey === "transfer-encoding") {
-      return;
-    }
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
 
-    if (lowerKey === "set-cookie") {
-      target.append(key, value);
-      return;
-    }
+    const upstreamResponse = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
 
-    target.set(key, value);
-  });
-}
+    const text = await upstreamResponse.text();
+    const data = text ? JSON.parse(text) : null;
 
-export async function POST(request: NextRequest) {
-  console.log("Login request received", API_BASE_URL);
-  const upstreamUrl = new URL("/api/auth/login", API_BASE_URL);
-  const body = await request.text();
+    const response = NextResponse.json(data ?? { success: false }, {
+      status: upstreamResponse.status,
+    });
 
-  const response = await fetch(upstreamUrl, {
-    method: "POST",
-    headers: new Headers(request.headers),
-    body,
-    credentials: "include",
-  });
+    const setCookies = upstreamResponse.headers.getSetCookie();
+    setCookies.forEach((cookie) => {
+      response.headers.append("set-cookie", cookie);
+    });
 
-  const responseText = await response.text();
-  const responseHeaders = new Headers();
-  copyResponseHeaders(response.headers, responseHeaders);
-
-  if (!responseHeaders.has("content-type") && responseText) {
-    responseHeaders.set("content-type", "application/json; charset=utf-8");
+    return response;
+  } catch (error) {
+    console.error("Auth login proxy error", error);
+    return NextResponse.json(
+      { success: false, message: "Unable to sign in. Please try again." },
+      { status: 500 },
+    );
   }
-
-  return new NextResponse(responseText, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: responseHeaders,
-  });
 }

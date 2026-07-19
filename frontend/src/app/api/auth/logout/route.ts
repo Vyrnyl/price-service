@@ -1,38 +1,31 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000";
 
-function copyResponseHeaders(source: Headers, target: Headers) {
-  source.forEach((value, key) => {
-    const lowerKey = key.toLowerCase();
-    if (lowerKey === "content-length" || lowerKey === "transfer-encoding") {
-      return;
-    }
+export async function POST(request: Request) {
+  try {
+    const upstreamResponse = await fetch(`${BACKEND_URL}/api/auth/logout`, {
+      method: "POST",
+      headers: {
+        cookie: request.headers.get("cookie") ?? "",
+      },
+    });
 
-    if (lowerKey === "set-cookie") {
-      target.append(key, value);
-      return;
-    }
+    const text = await upstreamResponse.text();
+    const data = text ? JSON.parse(text) : null;
 
-    target.set(key, value);
-  });
-}
+    const response = NextResponse.json(data ?? { success: true }, {
+      status: upstreamResponse.status,
+    });
 
-export async function POST(request: NextRequest) {
-  const upstreamUrl = new URL("/api/auth/logout", API_BASE_URL);
-  const response = await fetch(upstreamUrl, {
-    method: "POST",
-    headers: request.headers,
-    credentials: "include",
-  });
+    const setCookies = upstreamResponse.headers.getSetCookie();
+    setCookies.forEach((cookie) => {
+      response.headers.append("set-cookie", cookie);
+    });
 
-  const responseText = await response.text();
-  const responseHeaders = new Headers();
-  copyResponseHeaders(response.headers, responseHeaders);
-
-  return new NextResponse(responseText, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: responseHeaders,
-  });
+    return response;
+  } catch (error) {
+    console.error("Auth logout proxy error", error);
+    return NextResponse.json({ success: true, message: "Logout successful" });
+  }
 }
