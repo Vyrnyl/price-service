@@ -19,16 +19,23 @@ function copyResponseHeaders(source: Headers, target: Headers) {
 }
 
 export async function POST(request: NextRequest) {
-  const upstreamUrl = new URL("/api/auth/logout", API_BASE_URL);
+  const upstreamUrl = new URL("/api/auth/login", API_BASE_URL);
+  const body = await request.text();
+
   const response = await fetch(upstreamUrl, {
     method: "POST",
-    headers: request.headers,
+    headers: new Headers(request.headers),
+    body,
     credentials: "include",
   });
 
   const responseText = await response.text();
   const responseHeaders = new Headers();
   copyResponseHeaders(response.headers, responseHeaders);
+
+  if (!responseHeaders.has("content-type") && responseText) {
+    responseHeaders.set("content-type", "application/json; charset=utf-8");
+  }
 
   return new NextResponse(responseText, {
     status: response.status,
