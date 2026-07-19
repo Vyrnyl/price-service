@@ -99,7 +99,7 @@ export default function NavigationDrawer({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [activePath]);
 
   const links = role ? roleSpecificLinks[role] : [];
 

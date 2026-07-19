@@ -27,7 +27,7 @@ export default function TopAppBar({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [activePath]);
 
   const showLoginButton = role !== "admin" && role !== "officer" && activePath !== "/login";
 

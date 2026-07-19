@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MdLockOutline, MdOutlineMailOutline } from "react-icons/md";
+import { normalizeUserRole } from "@/lib/auth";
 import { useLogin } from "../hooks/useLogin";
 import { type LoginInput } from "../auth.schema";
 
 const getRedirectPath = (role: string | undefined) => {
-  if (role === "admin") return "/admin";
-  if (role === "officer") return "/officer";
+  const normalizedRole = normalizeUserRole(role);
+
+  if (normalizedRole === "admin") return "/admin";
+  if (normalizedRole === "officer") return "/officer";
   return "/";
 };
 
@@ -22,8 +25,11 @@ export default function LoginPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const result = await login(formData);
+
     if (result) {
-      router.push(getRedirectPath(result.data.role));
+      const redirectPath = getRedirectPath(result.data.role);
+      router.replace(redirectPath);
+      router.refresh();
     }
   };
 
