@@ -1,5 +1,22 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({
+    success: true,
+    message: "Logout successful",
+  });
+
+  response.cookies.set({
+    name: "accessToken",
+    value: "",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return response;
 }

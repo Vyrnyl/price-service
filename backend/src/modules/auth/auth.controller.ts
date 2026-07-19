@@ -6,30 +6,46 @@ import { loginSchema } from "./auth.schema";
 export const authController = {
   login: asyncHandler(async (req: Request, res: Response) => {
     const validatedBody = loginSchema.parse(req.body);
-    console.log("validatedBody");
     const result = await authService.login(validatedBody);
-
-    res.cookie("accessToken", result.accessToken, {
-      httpOnly: true,
-      sameSite: "none",
-      secure: true,
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
 
     return res.status(200).json({
       success: true,
-      data: result.user,
+      data: {
+        accessToken: result.accessToken,
+        user: result.user,
+      },
       message: "Login successful",
     });
   }),
 
-  logout: asyncHandler(async (_req: Request, res: Response) => {
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
+  me: asyncHandler(async (req: Request, res: Response) => {
+    const authUser = req.user as
+      | {
+          userId: string;
+          email: string;
+          role: "ADMIN" | "OFFICER" | "PUBLIC";
+        }
+      | undefined;
 
+    if (!authUser) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: authUser.userId,
+        email: authUser.email,
+        role: authUser.role,
+      },
+      message: "Authenticated user fetched",
+    });
+  }),
+
+  logout: asyncHandler(async (_req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: "Logout successful",

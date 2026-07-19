@@ -7,8 +7,15 @@ exports.authenticate = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const AppError_1 = __importDefault(require("../utils/AppError"));
 const asyncHandler_1 = require("../utils/asyncHandler");
+function getBearerToken(req) {
+    const header = req.headers.authorization;
+    if (typeof header === "string" && header.startsWith("Bearer ")) {
+        return header.slice(7).trim();
+    }
+    return null;
+}
 exports.authenticate = (0, asyncHandler_1.asyncHandler)(async (req, res, next) => {
-    const token = req.cookies.accessToken;
+    const token = getBearerToken(req) ?? req.cookies.accessToken;
     if (!token) {
         throw new AppError_1.default("Unauthorized", 401);
     }
