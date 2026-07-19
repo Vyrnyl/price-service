@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { verifyToken } from "./lib/jwt";
 
 const PROTECTED_PREFIXES = ["/admin", "/officer"];
-const PUBLIC_PATHS = ["/", "/login", "/register"];
 
 function isProtectedRoute(pathname: string) {
   return PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -24,11 +23,7 @@ function getDashboardPath(role: string | null) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("accessToken")?.value;
-
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
-  }
-
+  console.log('TOKEN: ', accessToken)
   if (!accessToken) {
     if (!isProtectedRoute(pathname)) {
       return NextResponse.next();
@@ -67,5 +62,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|favicon.ico).*)"],
+  matcher: ["/((?!_next/|api/|favicon.ico).*)"],
 };
