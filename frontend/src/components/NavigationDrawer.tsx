@@ -88,7 +88,7 @@ export default function NavigationDrawer({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const [role, setRole] = useState<UserRole>("public");
+  const [role, setRole] = useState<UserRole | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function NavigationDrawer({
     };
   }, []);
 
-  const links = roleSpecificLinks[role];
+  const links = role ? roleSpecificLinks[role] : [];
 
   const handleLogout = async () => {
     try {
@@ -133,8 +133,13 @@ export default function NavigationDrawer({
             Navigation
           </h2>
         </div>
-        <nav className="flex flex-col gap-2">
-          {links.map((item) => {
+        {!role ? (
+          <div className="px-6 py-4 text-sm text-on-surface-variant">
+            Loading navigation...
+          </div>
+        ) : (
+          <nav className="flex flex-col gap-2">
+            {links.map((item) => {
             const Icon = item.icon;
             const isActive = activePath === item.href;
 
@@ -154,18 +159,19 @@ export default function NavigationDrawer({
               </Link>
             );
           })}
-          {role !== "public" ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="mx-2 mt-2 flex items-center gap-4 rounded-full px-6 py-3 text-on-surface-variant transition-all hover:bg-surface-variant"
-            >
-              <MdOutlineLogout />
-              <span className="font-body-sm text-body-sm">Logout</span>
-            </button>
-          ) : null}
-          <hr className="mx-6 my-4 border-outline-variant" />
-        </nav>
+            {role !== "public" ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="mx-2 mt-2 flex items-center gap-4 rounded-full px-6 py-3 text-on-surface-variant transition-all hover:bg-surface-variant"
+              >
+                <MdOutlineLogout />
+                <span className="font-body-sm text-body-sm">Logout</span>
+              </button>
+            ) : null}
+            <hr className="mx-6 my-4 border-outline-variant" />
+          </nav>
+        )}
       </aside>
     </>
   );

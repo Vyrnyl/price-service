@@ -1,10 +1,5 @@
-import AppShell from "../../../../components/AppShell";
 import ReportGenerationPage from "../../../../features/officer/reports/ReportGenerationPage";
 
 export default function OfficerReportsRoute() {
-  return (
-    <AppShell activePath="/officer/reports">
-      <ReportGenerationPage />
-    </AppShell>
-  );
+  return <ReportGenerationPage />;
 }
