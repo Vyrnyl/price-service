@@ -6,7 +6,7 @@ import { loginSchema } from "./auth.schema";
 export const authController = {
   login: asyncHandler(async (req: Request, res: Response) => {
     const validatedBody = loginSchema.parse(req.body);
-
+    console.log("validatedBody");
     const result = await authService.login(validatedBody);
 
     res.cookie("accessToken", result.accessToken, {

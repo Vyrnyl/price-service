@@ -23,7 +23,7 @@ function getDashboardPath(role: string | null) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("accessToken")?.value;
-
+  console.log(accessToken)
   if (!accessToken) {
     if (!isProtectedRoute(pathname)) {
       return NextResponse.next();

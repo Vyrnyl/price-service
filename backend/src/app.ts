@@ -14,7 +14,7 @@ const port = process.env.PORT || 5000;
 const allowedOrigins = [
   process.env.CORS_ORIGIN,
   "http://localhost:3000",
-  "https://price-service-720edyncw-cap1313.vercel.app",
+  "https://price-service-sandy.vercel.app",
 ].filter(Boolean) as string[];
 
 const reportsDir = path.resolve(process.cwd(), "reports");

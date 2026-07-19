@@ -7,6 +7,7 @@ const auth_schema_1 = require("./auth.schema");
 exports.authController = {
     login: (0, asyncHandler_1.asyncHandler)(async (req, res) => {
         const validatedBody = auth_schema_1.loginSchema.parse(req.body);
+        console.log("validatedBody");
         const result = await auth_service_1.authService.login(validatedBody);
         res.cookie("accessToken", result.accessToken, {
             httpOnly: true,
