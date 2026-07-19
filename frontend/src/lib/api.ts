@@ -19,16 +19,21 @@ export class ApiError extends Error {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
+function resolveUrl(path: string) {
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  if (path.startsWith("/api/")) {
+    return path;
+  }
+
+  return `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
 export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  
   const { method = "GET", headers = {}, body, credentials = "include" } = options;
-  const isAbsoluteUrl = path.startsWith("http://") || path.startsWith("https://");
-  const isInternalApiRoute = path.startsWith("/api/");
-  const url = isAbsoluteUrl
-    ? path
-    : isInternalApiRoute
-      ? path
-      : `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+  const url = resolveUrl(path);
 
   const fetchOptions: RequestInit = {
     method,

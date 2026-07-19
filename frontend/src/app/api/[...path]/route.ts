@@ -32,23 +32,15 @@ async function proxyRequest(request: NextRequest) {
     body,
   });
 
-  const responseText = await response.text();
-  const responseContentType = response.headers.get("content-type") ?? "application/json";
+  const responseHeaders = new Headers(response.headers);
+  responseHeaders.delete("content-length");
+  responseHeaders.delete("transfer-encoding");
+  responseHeaders.delete("content-encoding");
 
-  const nextResponse = new NextResponse(responseText, {
+  return new NextResponse(response.body, {
     status: response.status,
-    headers: {
-      "content-type": responseContentType,
-    },
+    headers: responseHeaders,
   });
-
-  response.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== "set-cookie") {
-      nextResponse.headers.set(key, value);
-    }
-  });
-
-  return nextResponse;
 }
 
 export async function GET(request: NextRequest) {
