@@ -19,6 +19,7 @@ function copyResponseHeaders(source: Headers, target: Headers) {
 }
 
 export async function POST(request: NextRequest) {
+  console.log("Login request received", API_BASE_URL);
   const upstreamUrl = new URL("/api/auth/login", API_BASE_URL);
   const body = await request.text();
 
