@@ -20,7 +20,7 @@ export class ApiError extends Error {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  console.log('API_BASE_URL TEST:', API_BASE_URL);
+  
   const { method = "GET", headers = {}, body, credentials = "include" } = options;
   const isAbsoluteUrl = path.startsWith("http://") || path.startsWith("https://");
   const isInternalApiRoute = path.startsWith("/api/");
